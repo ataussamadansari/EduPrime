@@ -6,14 +6,36 @@ import '../../core/theme/app_text_styles.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/app_routes.dart';
 import '../../core/widgets/app_button.dart';
-import '../../data/models/course_model.dart';
+import '../../data/models/course_detail_model.dart';
+import '../../data/repositories/course_repository.dart';
 
-class PaymentSuccessScreen extends StatelessWidget {
+class PaymentSuccessScreen extends StatefulWidget {
   const PaymentSuccessScreen({super.key});
 
   @override
+  State<PaymentSuccessScreen> createState() => _PaymentSuccessScreenState();
+}
+
+class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
+  CourseDetailModel? _course;
+
+  @override
+  void initState() {
+    super.initState();
+    final id = Get.arguments;
+    if (id is int) _loadCourse(id);
+  }
+
+  Future<void> _loadCourse(int id) async {
+    try {
+      final c = await CourseRepository().getCourseDetail(id);
+      if (mounted) setState(() => _course = c);
+    } catch (_) {}
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final course = Get.arguments as CourseModel?;
+    final course = _course;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(

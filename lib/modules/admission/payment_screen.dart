@@ -7,7 +7,8 @@ import '../../core/constants/app_constants.dart';
 import '../../core/utils/app_routes.dart';
 import '../../core/widgets/app_button.dart';
 import '../../core/widgets/app_card.dart';
-import '../../data/models/course_model.dart';
+import '../../data/models/course_detail_model.dart';
+import '../../data/repositories/course_repository.dart';
 
 class PaymentScreen extends StatefulWidget {
   const PaymentScreen({super.key});
@@ -19,6 +20,21 @@ class PaymentScreen extends StatefulWidget {
 class _PaymentScreenState extends State<PaymentScreen> {
   int _selectedMethod = 0;
   bool _isProcessing = false;
+  CourseDetailModel? _course;
+
+  @override
+  void initState() {
+    super.initState();
+    final id = Get.arguments;
+    if (id is int) _loadCourse(id);
+  }
+
+  Future<void> _loadCourse(int id) async {
+    try {
+      final c = await CourseRepository().getCourseDetail(id);
+      if (mounted) setState(() => _course = c);
+    } catch (_) {}
+  }
 
   static const List<_PaymentMethod> _methods = [
     _PaymentMethod(
@@ -47,16 +63,29 @@ class _PaymentScreenState extends State<PaymentScreen> {
     ),
   ];
 
-  Future<void> _pay(CourseModel? course) async {
+  Future<void> _pay(CourseDetailModel? course) async {
+    if (course == null) return;
     setState(() => _isProcessing = true);
-    await Future.delayed(const Duration(milliseconds: 2000));
-    setState(() => _isProcessing = false);
-    Get.offNamed(AppRoutes.paymentSuccess, arguments: course);
+    try {
+      // Simulate payment gateway delay, then call enroll API
+      await Future.delayed(const Duration(milliseconds: 1500));
+      await CourseRepository().enrollCourse(course.id);
+      if (!mounted) return;
+      setState(() => _isProcessing = false);
+      Get.offNamed(AppRoutes.paymentSuccess, arguments: course.id);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isProcessing = false);
+      Get.snackbar('Payment Failed', e.toString(),
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: AppColors.error.withValues(alpha: 0.9),
+          colorText: Colors.white);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final course = Get.arguments as CourseModel?;
+    final course = _course;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -94,14 +123,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   const SizedBox(height: AppConstants.spaceMD),
                   _OrderRow(
                     label: course?.title ?? 'Course',
-                    value: '₹${course?.price.toStringAsFixed(0) ?? '0'}',
+                    value: '₹${(course?.salePrice ?? course?.price ?? 0).toStringAsFixed(0)}',
                     isDark: isDark,
                   ),
                   const SizedBox(height: 8),
                   _OrderRow(
                       label: 'GST (18%)',
                       value:
-                          '₹${((course?.price ?? 0) * 0.18).toStringAsFixed(0)}',
+                          '₹${((course?.salePrice ?? course?.price ?? 0) * 0.18).toStringAsFixed(0)}',
                       isDark: isDark),
                   Divider(
                     color:
@@ -111,7 +140,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   _OrderRow(
                     label: 'Total',
                     value:
-                        '₹${((course?.price ?? 0) * 1.18).toStringAsFixed(0)}',
+                        '₹${((course?.salePrice ?? course?.price ?? 0) * 1.18).toStringAsFixed(0)}',
                     isDark: isDark,
                     isBold: true,
                   ),
@@ -232,7 +261,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             const SizedBox(height: AppConstants.spaceXL),
 
             AppButton(
-              label: 'Pay ₹${((course?.price ?? 0) * 1.18).toStringAsFixed(0)}',
+              label: 'Pay ₹${((course?.salePrice ?? course?.price ?? 0) * 1.18).toStringAsFixed(0)}',
               onTap: () => _pay(course),
               isLoading: _isProcessing,
               icon: Icons.lock_rounded,

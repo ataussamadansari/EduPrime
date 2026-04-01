@@ -13,8 +13,8 @@ class OtpScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Put after route args are available
     final controller = Get.put(OtpController());
-    final phone = Get.arguments as String? ?? '**********';
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -32,7 +32,6 @@ class OtpScreen extends StatelessWidget {
             children: [
               const SizedBox(height: AppConstants.spaceMD),
 
-              // Icon
               Container(
                 width: 64,
                 height: 64,
@@ -76,7 +75,7 @@ class OtpScreen extends StatelessWidget {
                   children: [
                     const TextSpan(text: 'We sent a 6-digit OTP to '),
                     TextSpan(
-                      text: '+91 $phone',
+                      text: '+91 ${controller.mobile}',
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: isDark
                             ? AppColors.textPrimaryDark
@@ -90,57 +89,62 @@ class OtpScreen extends StatelessWidget {
 
               const SizedBox(height: AppConstants.spaceXXL),
 
-              // OTP input
-              Obx(() => PinCodeTextField(
-                        appContext: context,
-                        length: AppConstants.otpLength,
-                        animationType: AnimationType.scale,
-                        keyboardType: TextInputType.number,
-                        pinTheme: PinTheme(
-                          shape: PinCodeFieldShape.box,
-                          borderRadius:
-                              BorderRadius.circular(AppConstants.radiusMD),
-                          fieldHeight: 56,
-                          fieldWidth: 48,
-                          activeFillColor: isDark
-                              ? AppColors.cardDark
-                              : AppColors.surfaceLight,
-                          inactiveFillColor: isDark
-                              ? AppColors.cardDark
-                              : AppColors.surfaceLight,
-                          selectedFillColor: isDark
-                              ? AppColors.cardDark
-                              : AppColors.surfaceLight,
-                          activeColor: controller.isError.value
-                              ? AppColors.error
-                              : AppColors.primary,
-                          inactiveColor: isDark
-                              ? AppColors.borderDark
-                              : AppColors.borderLight,
-                          selectedColor: AppColors.primary,
-                        ),
-                        enableActiveFill: true,
-                        onChanged: (val) {
-                          controller.otp.value = val;
-                          controller.isError.value = false;
-                        },
-                        onCompleted: (_) => controller.verifyOtp(),
-                        textStyle: AppTextStyles.h2.copyWith(
-                          color: isDark
-                              ? AppColors.textPrimaryDark
-                              : AppColors.textPrimaryLight,
-                        ),
-                      ))
+              // OTP input — TextEditingController for dev auto-fill
+              Obx(() {
+                final pinController = TextEditingController(
+                  text: controller.otp.value,
+                );
+                pinController.selection = TextSelection.fromPosition(
+                  TextPosition(offset: pinController.text.length),
+                );
+                return PinCodeTextField(
+                  appContext: context,
+                  length: AppConstants.otpLength,
+                  animationType: AnimationType.scale,
+                  keyboardType: TextInputType.number,
+                  controller: pinController,
+                  pinTheme: PinTheme(
+                      shape: PinCodeFieldShape.box,
+                      borderRadius:
+                          BorderRadius.circular(AppConstants.radiusMD),
+                      fieldHeight: 56,
+                      fieldWidth: 48,
+                      activeFillColor:
+                          isDark ? AppColors.cardDark : AppColors.surfaceLight,
+                      inactiveFillColor:
+                          isDark ? AppColors.cardDark : AppColors.surfaceLight,
+                      selectedFillColor:
+                          isDark ? AppColors.cardDark : AppColors.surfaceLight,
+                      activeColor: controller.errorText.value.isNotEmpty
+                          ? AppColors.error
+                          : AppColors.primary,
+                      inactiveColor:
+                          isDark ? AppColors.borderDark : AppColors.borderLight,
+                      selectedColor: AppColors.primary,
+                    ),
+                  enableActiveFill: true,
+                  onChanged: (val) {
+                    controller.otp.value = val;
+                    controller.errorText.value = '';
+                  },
+                  onCompleted: (_) => controller.verifyOtp(),
+                  textStyle: AppTextStyles.h2.copyWith(
+                    color: isDark
+                        ? AppColors.textPrimaryDark
+                        : AppColors.textPrimaryLight,
+                  ),
+                );
+              })
                   .animate(delay: 250.ms)
                   .slideY(begin: 0.2, end: 0, duration: 400.ms)
                   .fadeIn(duration: 400.ms),
 
               // Error message
-              Obx(() => controller.isError.value
+              Obx(() => controller.errorText.value.isNotEmpty
                   ? Padding(
                       padding: const EdgeInsets.only(top: 8),
                       child: Text(
-                        'Invalid OTP. Please try again.',
+                        controller.errorText.value,
                         style: AppTextStyles.bodySmall
                             .copyWith(color: AppColors.error),
                       ),
@@ -166,16 +170,14 @@ class OtpScreen extends StatelessWidget {
                               onTap: controller.resendOtp,
                               child: Text(
                                 'Resend',
-                                style: AppTextStyles.labelLarge.copyWith(
-                                  color: AppColors.primary,
-                                ),
+                                style: AppTextStyles.labelLarge
+                                    .copyWith(color: AppColors.primary),
                               ),
                             )
                           : Text(
                               controller.timerDisplay,
-                              style: AppTextStyles.labelLarge.copyWith(
-                                color: AppColors.primary,
-                              ),
+                              style: AppTextStyles.labelLarge
+                                  .copyWith(color: AppColors.primary),
                             ),
                     ],
                   )).animate(delay: 300.ms).fadeIn(duration: 400.ms),
@@ -184,14 +186,13 @@ class OtpScreen extends StatelessWidget {
 
               // Verify button
               Obx(() => AppButton(
-                        label: 'Verify & Continue',
-                        onTap: controller.otp.value.length ==
-                                AppConstants.otpLength
-                            ? controller.verifyOtp
-                            : null,
-                        isLoading: controller.isLoading.value,
-                        icon: Icons.verified_rounded,
-                      ))
+                    label: 'Verify & Continue',
+                    onTap: controller.otp.value.length == AppConstants.otpLength
+                        ? controller.verifyOtp
+                        : null,
+                    isLoading: controller.isLoading.value,
+                    icon: Icons.verified_rounded,
+                  ))
                   .animate(delay: 400.ms)
                   .slideY(begin: 0.3, end: 0, duration: 400.ms)
                   .fadeIn(duration: 400.ms),

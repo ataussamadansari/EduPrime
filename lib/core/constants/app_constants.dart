@@ -1,6 +1,12 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 // App-wide constants
 class AppConstants {
   static const String appName = 'EduPrime';
+
+  // API — loaded from .env file
+  static String get baseUrl =>
+      dotenv.env['BASE_URL'] ?? 'https://ssvv.aradhyatech.com/api/v1';
   static const String appTagline = 'Learn. Grow. Succeed.';
 
   // Spacing (8pt grid)

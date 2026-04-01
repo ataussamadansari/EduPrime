@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'core/theme/app_theme.dart';
 import 'core/utils/app_routes.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Future.wait([
+    dotenv.load(fileName: '.env'),
+    GetStorage.init(),
+  ]);
   // Lock to portrait
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,

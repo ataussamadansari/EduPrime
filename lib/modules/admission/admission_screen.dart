@@ -7,7 +7,9 @@ import '../../core/constants/app_constants.dart';
 import '../../core/utils/app_routes.dart';
 import '../../core/widgets/app_button.dart';
 import '../../core/widgets/app_card.dart';
-import '../../data/models/course_model.dart';
+import '../../core/widgets/network_image_widget.dart';
+import '../../data/models/course_detail_model.dart';
+import '../../data/repositories/course_repository.dart';
 
 class AdmissionScreen extends StatefulWidget {
   const AdmissionScreen({super.key});
@@ -22,6 +24,22 @@ class _AdmissionScreenState extends State<AdmissionScreen> {
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
 
+  CourseDetailModel? _course;
+
+  @override
+  void initState() {
+    super.initState();
+    final id = Get.arguments;
+    if (id is int) _loadCourse(id);
+  }
+
+  Future<void> _loadCourse(int id) async {
+    try {
+      final c = await CourseRepository().getCourseDetail(id);
+      if (mounted) setState(() => _course = c);
+    } catch (_) {}
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -32,7 +50,7 @@ class _AdmissionScreenState extends State<AdmissionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final course = Get.arguments as CourseModel?;
+    final course = _course;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -64,12 +82,12 @@ class _AdmissionScreenState extends State<AdmissionScreen> {
                       ClipRRect(
                         borderRadius:
                             BorderRadius.circular(AppConstants.radiusSM),
-                        child: Image.network(
-                          course.thumbnail,
+                        child: NetworkImageWidget(
+                          url: course.thumbnailUrl,
                           width: 60,
                           height: 60,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Container(
+                          placeholder: Container(
                             width: 60,
                             height: 60,
                             color: AppColors.primary.withValues(alpha: 0.15),
@@ -95,7 +113,7 @@ class _AdmissionScreenState extends State<AdmissionScreen> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '₹${course.price.toStringAsFixed(0)}',
+                              '₹${(course.salePrice ?? course.price).toStringAsFixed(0)}',
                               style: AppTextStyles.labelLarge.copyWith(
                                 color: AppColors.primary,
                               ),
@@ -180,7 +198,7 @@ class _AdmissionScreenState extends State<AdmissionScreen> {
                 label: 'Proceed to Payment',
                 onTap: () {
                   if (_formKey.currentState!.validate()) {
-                    Get.toNamed(AppRoutes.payment, arguments: course);
+                    Get.toNamed(AppRoutes.payment, arguments: course?.id);
                   }
                 },
                 icon: Icons.payment_rounded,

@@ -4,6 +4,8 @@ import 'package:get/get.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/app_routes.dart';
+import '../../core/network/api_client.dart';
+import '../../data/repositories/auth_repository.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -16,9 +18,18 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(milliseconds: 3000), () {
+    _navigate();
+  }
+
+  Future<void> _navigate() async {
+    await Future.delayed(const Duration(milliseconds: 2500));
+    final token = AuthRepository().getSavedToken();
+    if (token != null && token.isNotEmpty) {
+      ApiClient.instance.setAuthToken(token);
+      Get.offNamed(AppRoutes.home);
+    } else {
       Get.offNamed(AppRoutes.onboarding);
-    });
+    }
   }
 
   @override

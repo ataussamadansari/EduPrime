@@ -1,215 +1,260 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:get/get.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/widgets/app_card.dart';
-import '../../data/dummy/dummy_data.dart';
-import '../../data/models/assignment_model.dart';
+import '../../core/widgets/shimmer_widgets.dart';
+import '../../data/models/assignment_api_model.dart';
+import 'assignment_detail_screen.dart';
+import 'assignments_controller.dart';
 
 class AssignmentsScreen extends StatelessWidget {
   const AssignmentsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final ctrl = Get.put(AssignmentsController());
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final assignments = DummyData.assignments;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Assignments',
-          style: AppTextStyles.h2.copyWith(
-            color:
-                isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
-          ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+          onPressed: Get.back,
         ),
+        title: Text('Assignments',
+            style: AppTextStyles.h2.copyWith(
+              color: isDark
+                  ? AppColors.textPrimaryDark
+                  : AppColors.textPrimaryLight,
+            )),
       ),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(AppConstants.spaceMD),
-        itemCount: assignments.length,
-        separatorBuilder: (_, __) =>
-            const SizedBox(height: AppConstants.spaceMD),
-        itemBuilder: (context, i) => _AssignmentCard(
-          assignment: assignments[i],
-          isDark: isDark,
-        )
-            .animate(delay: Duration(milliseconds: i * 80))
-            .fadeIn(duration: 400.ms)
-            .slideY(begin: 0.1, end: 0),
-      ),
+      body: Obx(() {
+        if (ctrl.isLoading.value) {
+          return const ListShimmer();
+        }
+        if (ctrl.error.value.isNotEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(ctrl.error.value,
+                    style: AppTextStyles.bodyMedium
+                        .copyWith(color: AppColors.error),
+                    textAlign: TextAlign.center),
+                const SizedBox(height: AppConstants.spaceMD),
+                TextButton(
+                    onPressed: ctrl.fetchAssignments,
+                    child: const Text('Retry')),
+              ],
+            ),
+          );
+        }
+
+        return Column(
+          children: [
+            // Filter chips
+            _FilterBar(ctrl: ctrl, isDark: isDark)
+                .animate()
+                .fadeIn(duration: 400.ms),
+
+            // List
+            Expanded(
+              child: ctrl.filtered.isEmpty
+                  ? Center(
+                      child: Text('No assignments found',
+                          style: AppTextStyles.h3.copyWith(
+                            color: isDark
+                                ? AppColors.textSecondaryDark
+                                : AppColors.textSecondaryLight,
+                          )),
+                    )
+                  : RefreshIndicator(
+                      onRefresh: ctrl.fetchAssignments,
+                      child: ListView.separated(
+                        padding: const EdgeInsets.all(AppConstants.spaceMD),
+                        itemCount: ctrl.filtered.length,
+                        separatorBuilder: (_, __) =>
+                            const SizedBox(height: AppConstants.spaceMD),
+                        itemBuilder: (context, i) {
+                          final a = ctrl.filtered[i];
+                          return _AssignmentCard(
+                            assignment: a,
+                            isDark: isDark,
+                          )
+                              .animate(
+                                  delay: Duration(milliseconds: i * 60))
+                              .fadeIn(duration: 400.ms)
+                              .slideY(begin: 0.1, end: 0);
+                        },
+                      ),
+                    ),
+            ),
+          ],
+        );
+      }),
     );
   }
 }
 
-class _AssignmentCard extends StatelessWidget {
-  final AssignmentModel assignment;
+// ── Filter Bar ────────────────────────────────────────────────────────────────
+class _FilterBar extends StatelessWidget {
+  final AssignmentsController ctrl;
   final bool isDark;
+  const _FilterBar({required this.ctrl, required this.isDark});
 
+  static const _filters = [
+    ('all', 'All'),
+    ('pending', 'Pending'),
+    ('submitted', 'Submitted'),
+    ('graded', 'Graded'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 48,
+      child: Obx(() => ListView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppConstants.spaceMD, vertical: 4),
+            children: _filters.map((f) {
+              final isSelected = ctrl.filter.value == f.$1;
+              return Padding(
+                padding:
+                    const EdgeInsets.only(right: AppConstants.spaceSM),
+                child: FilterChip(
+                  label: Text(f.$2),
+                  selected: isSelected,
+                  onSelected: (_) => ctrl.setFilter(f.$1),
+                  backgroundColor:
+                      isDark ? AppColors.cardDark : AppColors.surfaceLight,
+                  selectedColor: AppColors.primary.withValues(alpha: 0.15),
+                  labelStyle: AppTextStyles.labelMedium.copyWith(
+                    color: isSelected
+                        ? AppColors.primary
+                        : (isDark
+                            ? AppColors.textSecondaryDark
+                            : AppColors.textSecondaryLight),
+                    fontWeight:
+                        isSelected ? FontWeight.w700 : FontWeight.w400,
+                  ),
+                  side: BorderSide(
+                    color: isSelected
+                        ? AppColors.primary
+                        : (isDark
+                            ? AppColors.borderDark
+                            : AppColors.borderLight),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.circular(AppConstants.radiusFull),
+                  ),
+                  showCheckmark: false,
+                ),
+              );
+            }).toList(),
+          )),
+    );
+  }
+}
+
+// ── Assignment Card ───────────────────────────────────────────────────────────
+class _AssignmentCard extends StatelessWidget {
+  final AssignmentApiModel assignment;
+  final bool isDark;
   const _AssignmentCard({required this.assignment, required this.isDark});
-
-  Color get _statusColor {
-    switch (assignment.status) {
-      case AssignmentStatus.pending:
-        return AppColors.warning;
-      case AssignmentStatus.submitted:
-        return AppColors.info;
-      case AssignmentStatus.graded:
-        return AppColors.success;
-      case AssignmentStatus.overdue:
-        return AppColors.error;
-    }
-  }
-
-  String get _statusLabel {
-    switch (assignment.status) {
-      case AssignmentStatus.pending:
-        return 'Pending';
-      case AssignmentStatus.submitted:
-        return 'Submitted';
-      case AssignmentStatus.graded:
-        return 'Graded';
-      case AssignmentStatus.overdue:
-        return 'Overdue';
-    }
-  }
-
-  IconData get _statusIcon {
-    switch (assignment.status) {
-      case AssignmentStatus.pending:
-        return Icons.pending_actions_rounded;
-      case AssignmentStatus.submitted:
-        return Icons.upload_file_rounded;
-      case AssignmentStatus.graded:
-        return Icons.grade_rounded;
-      case AssignmentStatus.overdue:
-        return Icons.warning_amber_rounded;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     return AppCard(
+      onTap: () => Get.to(
+        () => const AssignmentDetailScreen(),
+        arguments: assignment.id,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: _statusColor.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(AppConstants.radiusMD),
-                ),
-                child: Icon(_statusIcon, color: _statusColor, size: 22),
-              ),
-              const SizedBox(width: AppConstants.spaceMD),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      assignment.title,
-                      style: AppTextStyles.h3.copyWith(
-                        color: isDark
-                            ? AppColors.textPrimaryDark
-                            : AppColors.textPrimaryLight,
-                      ),
+                child: Text(assignment.title,
+                    style: AppTextStyles.h3.copyWith(
+                      color: isDark
+                          ? AppColors.textPrimaryDark
+                          : AppColors.textPrimaryLight,
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      assignment.courseName,
-                      style: AppTextStyles.caption.copyWith(
-                        color: isDark
-                            ? AppColors.textSecondaryDark
-                            : AppColors.textSecondaryLight,
-                      ),
-                    ),
-                  ],
-                ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis),
               ),
-              // Status badge
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: _statusColor.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(AppConstants.radiusFull),
-                ),
-                child: Text(
-                  _statusLabel,
-                  style: AppTextStyles.caption.copyWith(
-                    color: _statusColor,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
+              const SizedBox(width: AppConstants.spaceSM),
+              _StatusBadge(assignment: assignment),
             ],
           ),
-          const SizedBox(height: AppConstants.spaceMD),
-          Divider(
-            height: 1,
-            color: isDark ? AppColors.dividerDark : AppColors.dividerLight,
-          ),
-          const SizedBox(height: AppConstants.spaceSM),
+          const SizedBox(height: 6),
+          Text(assignment.course.title,
+              style: AppTextStyles.caption.copyWith(
+                color: AppColors.primary,
+                fontWeight: FontWeight.w600,
+              )),
+          const SizedBox(height: 6),
           Row(
             children: [
-              Icon(
-                Icons.calendar_today_rounded,
-                size: 14,
-                color: isDark
-                    ? AppColors.textSecondaryDark
-                    : AppColors.textSecondaryLight,
-              ),
+              Icon(Icons.calendar_today_rounded,
+                  size: 12,
+                  color: assignment.isPastDue
+                      ? AppColors.error
+                      : (isDark
+                          ? AppColors.textSecondaryDark
+                          : AppColors.textSecondaryLight)),
               const SizedBox(width: 4),
               Text(
-                'Due: ${assignment.dueDate}',
+                'Due: ${_formatDate(assignment.dueAt)}',
                 style: AppTextStyles.caption.copyWith(
-                  color: isDark
-                      ? AppColors.textSecondaryDark
-                      : AppColors.textSecondaryLight,
+                  color: assignment.isPastDue
+                      ? AppColors.error
+                      : (isDark
+                          ? AppColors.textSecondaryDark
+                          : AppColors.textSecondaryLight),
+                  fontWeight: assignment.isPastDue
+                      ? FontWeight.w600
+                      : FontWeight.w400,
                 ),
               ),
               const Spacer(),
-              if (assignment.status == AssignmentStatus.graded &&
-                  assignment.score != null) ...[
-                const Icon(Icons.star_rounded,
-                    size: 14, color: AppColors.warning),
-                const SizedBox(width: 4),
-                Text(
-                  '${assignment.score}/${assignment.totalMarks}',
-                  style: AppTextStyles.labelMedium.copyWith(
-                    color: AppColors.success,
-                  ),
-                ),
-              ] else ...[
-                Text(
-                  'Max: ${assignment.totalMarks} marks',
+              Text('${assignment.maxMarks} marks',
                   style: AppTextStyles.caption.copyWith(
                     color: isDark
                         ? AppColors.textSecondaryDark
                         : AppColors.textSecondaryLight,
-                  ),
-                ),
-              ],
+                  )),
             ],
           ),
-          if (assignment.status == AssignmentStatus.pending) ...[
-            const SizedBox(height: AppConstants.spaceMD),
-            ElevatedButton.icon(
-              onPressed: () {},
-              icon: const Icon(Icons.upload_rounded, size: 16),
-              label: const Text('Submit Assignment'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                minimumSize: const Size(double.infinity, 44),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppConstants.radiusMD),
-                ),
-                textStyle: AppTextStyles.labelLarge,
+          // Grade if available
+          if (assignment.isGraded && assignment.submission?.marks != null) ...[
+            const SizedBox(height: AppConstants.spaceSM),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppConstants.spaceSM, vertical: 4),
+              decoration: BoxDecoration(
+                color: AppColors.success.withValues(alpha: 0.1),
+                borderRadius:
+                    BorderRadius.circular(AppConstants.radiusSM),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.grade_rounded,
+                      color: AppColors.success, size: 14),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${assignment.submission!.marks}/${assignment.maxMarks}',
+                    style: AppTextStyles.labelMedium.copyWith(
+                        color: AppColors.success),
+                  ),
+                ],
               ),
             ),
           ],
@@ -217,4 +262,48 @@ class _AssignmentCard extends StatelessWidget {
       ),
     );
   }
+
+  String _formatDate(String iso) {
+    try {
+      final d = DateTime.parse(iso).toLocal();
+      return '${d.day}/${d.month}/${d.year}';
+    } catch (_) {
+      return iso.length >= 10 ? iso.substring(0, 10) : iso;
+    }
+  }
 }
+
+class _StatusBadge extends StatelessWidget {
+  final AssignmentApiModel assignment;
+  const _StatusBadge({required this.assignment});
+
+  @override
+  Widget build(BuildContext context) {
+    final Color color;
+    final String label;
+    if (assignment.isGraded) {
+      color = AppColors.success;
+      label = 'Graded';
+    } else if (assignment.isSubmitted) {
+      color = AppColors.info;
+      label = 'Submitted';
+    } else if (assignment.isPastDue) {
+      color = AppColors.error;
+      label = 'Overdue';
+    } else {
+      color = AppColors.warning;
+      label = 'Pending';
+    }
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(AppConstants.radiusFull),
+      ),
+      child: Text(label,
+          style: AppTextStyles.caption
+              .copyWith(color: color, fontWeight: FontWeight.w600)),
+    );
+  }
+}
+

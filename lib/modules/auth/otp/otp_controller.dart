@@ -2,19 +2,29 @@ import 'dart:async';
 import 'package:get/get.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/app_routes.dart';
+import '../../../data/repositories/auth_repository.dart';
+import '../../../data/models/user_model.dart';
 
 class OtpController extends GetxController {
   final RxString otp = ''.obs;
   final RxBool isLoading = false.obs;
-  final RxBool isError = false.obs;
+  final RxString errorText = ''.obs;
   final RxInt timerSeconds = AppConstants.otpTimerSeconds.obs;
   final RxBool canResend = false.obs;
 
+  late final String mobile;
+  String? _devOtp; // pre-filled in dev from API response
+
   Timer? _timer;
+  final _repo = AuthRepository();
 
   @override
   void onInit() {
     super.onInit();
+    final args = Get.arguments as Map<String, dynamic>?;
+    mobile = args?['mobile'] ?? '';
+    _devOtp = args?['otp'];
+    if (_devOtp != null) otp.value = _devOtp!; // auto-fill for dev
     _startTimer();
   }
 
@@ -32,24 +42,33 @@ class OtpController extends GetxController {
     });
   }
 
-  void resendOtp() {
+  Future<void> resendOtp() async {
     if (!canResend.value) return;
-    _startTimer();
-    // Simulate resend
+    try {
+      final result = await _repo.sendOtp(mobile);
+      _devOtp = result.otp;
+      _startTimer();
+    } catch (e) {
+      errorText.value = e.toString();
+    }
   }
 
   Future<void> verifyOtp() async {
     if (otp.value.length != AppConstants.otpLength) return;
     isLoading.value = true;
-    isError.value = false;
-    await Future.delayed(const Duration(milliseconds: 1500));
-    isLoading.value = false;
-
-    // Accept any 6-digit OTP for demo
-    if (otp.value == '000000') {
-      isError.value = true;
-    } else {
+    errorText.value = '';
+    try {
+      final UserModel user = await _repo.verifyOtp(
+        mobile: mobile,
+        otp: otp.value,
+      );
+      // Store user in GetX for app-wide access
+      Get.put(user, permanent: true);
       Get.offAllNamed(AppRoutes.home);
+    } catch (e) {
+      errorText.value = e.toString();
+    } finally {
+      isLoading.value = false;
     }
   }
 

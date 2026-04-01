@@ -8,6 +8,7 @@ import '../../modules/course_detail/course_detail_screen.dart';
 import '../../modules/admission/admission_screen.dart';
 import '../../modules/admission/payment_screen.dart';
 import '../../modules/admission/payment_success_screen.dart';
+import '../../modules/lesson_player/lesson_player_screen.dart';
 
 const _duration = Duration(milliseconds: 300);
 
@@ -21,6 +22,7 @@ class AppRoutes {
   static const String admission = '/admission';
   static const String payment = '/payment';
   static const String paymentSuccess = '/payment-success';
+  static const String lessonPlayer = '/lesson-player';
 
   static final List<GetPage> pages = [
     GetPage(
@@ -74,6 +76,12 @@ class AppRoutes {
     GetPage(
       name: paymentSuccess,
       page: () => const PaymentSuccessScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: _duration,
+    ),
+    GetPage(
+      name: lessonPlayer,
+      page: () => const LessonPlayerScreen(),
       transition: Transition.fadeIn,
       transitionDuration: _duration,
     ),

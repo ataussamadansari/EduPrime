@@ -12,6 +12,7 @@ import '../../core/widgets/network_image_widget.dart';
 import '../../core/widgets/section_header.dart';
 import '../../core/widgets/shimmer_widgets.dart';
 import '../../data/models/dashboard_model.dart';
+import '../../modules/notifications/notifications_screen.dart';
 import 'dashboard_controller.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -143,7 +144,7 @@ class _DashboardBody extends StatelessWidget {
                     ),
                 ],
               ),
-              onPressed: () {},
+              onPressed: () => Get.to(() => const NotificationsScreen()),
             ),
             Padding(
               padding: const EdgeInsets.only(right: AppConstants.spaceMD),

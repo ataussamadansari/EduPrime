@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
-import '../theme/app_colors.dart';
 import '../constants/app_constants.dart';
 
 // Base shimmer box
@@ -48,7 +47,7 @@ class DashboardShimmer extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Banner
-          ShimmerBox(
+          const ShimmerBox(
               width: double.infinity,
               height: 155,
               radius: AppConstants.radiusXL),

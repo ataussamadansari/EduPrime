@@ -122,7 +122,7 @@ class EditProfileScreen extends StatelessWidget {
                       )),
                   const SizedBox(height: AppConstants.spaceSM),
                   Obx(() => DropdownButtonFormField<String>(
-                        value: ctrl.gender.value.isEmpty
+                        initialValue: ctrl.gender.value.isEmpty
                             ? null
                             : ctrl.gender.value,
                         hint: Text('Select gender',

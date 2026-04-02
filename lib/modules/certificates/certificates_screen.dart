@@ -11,6 +11,8 @@ import '../../data/models/certificate_model.dart';
 import 'certificate_detail_screen.dart';
 import 'certificates_controller.dart';
 
+bool _isPdf(String? url) => url != null && url.toLowerCase().endsWith('.pdf');
+
 class CertificatesScreen extends StatelessWidget {
   const CertificatesScreen({super.key});
 
@@ -89,26 +91,38 @@ class _CertificateCard extends StatelessWidget {
       onTap: () => Get.to(() => CertificateDetailScreen(certId: cert.id)),
       child: Row(
         children: [
-          // Certificate thumbnail
+          // Certificate thumbnail — image ya PDF icon
           ClipRRect(
             borderRadius: BorderRadius.circular(AppConstants.radiusMD),
-            child: NetworkImageWidget(
-              url: cert.fileUrl,
-              width: 72,
-              height: 72,
-              fit: BoxFit.cover,
-              placeholder: Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  gradient: AppColors.primaryGradient,
-                  borderRadius:
-                      BorderRadius.circular(AppConstants.radiusMD),
-                ),
-                child: const Icon(Icons.workspace_premium_rounded,
-                    color: Colors.white, size: 32),
-              ),
-            ),
+            child: _isPdf(cert.fileUrl)
+                ? Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      gradient: AppColors.primaryGradient,
+                      borderRadius:
+                          BorderRadius.circular(AppConstants.radiusMD),
+                    ),
+                    child: const Icon(Icons.picture_as_pdf_rounded,
+                        color: Colors.white, size: 32),
+                  )
+                : NetworkImageWidget(
+                    url: cert.fileUrl,
+                    width: 72,
+                    height: 72,
+                    fit: BoxFit.cover,
+                    placeholder: Container(
+                      width: 72,
+                      height: 72,
+                      decoration: BoxDecoration(
+                        gradient: AppColors.primaryGradient,
+                        borderRadius:
+                            BorderRadius.circular(AppConstants.radiusMD),
+                      ),
+                      child: const Icon(Icons.workspace_premium_rounded,
+                          color: Colors.white, size: 32),
+                    ),
+                  ),
           ),
           const SizedBox(width: AppConstants.spaceMD),
           Expanded(
@@ -163,8 +177,7 @@ class _StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color =
-        status == 'issued' ? AppColors.success : AppColors.warning;
+    final color = status == 'issued' ? AppColors.success : AppColors.warning;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
@@ -221,4 +234,3 @@ class _EmptyState extends StatelessWidget {
     );
   }
 }
-

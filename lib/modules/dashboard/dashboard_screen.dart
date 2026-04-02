@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
@@ -93,166 +94,179 @@ class _DashboardBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomScrollView(
-      slivers: [
-        // ── AppBar ────────────────────────────────────────────────────────
-        SliverAppBar(
-          floating: true,
-          backgroundColor: isDark ? AppColors.bgDark : AppColors.bgLight,
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                data.greeting,
-                style: AppTextStyles.caption.copyWith(
-                  color: isDark
-                      ? AppColors.textSecondaryDark
-                      : AppColors.textSecondaryLight,
+    return RefreshIndicator(
+      onRefresh: ctrl.fetchDashboard,
+      color: AppColors.primary,
+      child: CustomScrollView(
+        slivers: [
+          // ── AppBar ────────────────────────────────────────────────────────
+          SliverAppBar(
+            floating: true,
+            backgroundColor: isDark ? AppColors.bgDark : AppColors.bgLight,
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  data.greeting,
+                  style: AppTextStyles.caption.copyWith(
+                    color: isDark
+                        ? AppColors.textSecondaryDark
+                        : AppColors.textSecondaryLight,
+                  ),
                 ),
-              ),
-              Text(
-                data.profile.name,
-                style: AppTextStyles.h2.copyWith(
-                  color: isDark
-                      ? AppColors.textPrimaryDark
-                      : AppColors.textPrimaryLight,
+                Text(
+                  data.profile.name,
+                  style: AppTextStyles.h2.copyWith(
+                    color: isDark
+                        ? AppColors.textPrimaryDark
+                        : AppColors.textPrimaryLight,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          actions: [
-            IconButton(
-              icon: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Icon(Icons.notifications_outlined,
-                      color: isDark
-                          ? AppColors.textPrimaryDark
-                          : AppColors.textPrimaryLight),
-                  if (data.notificationUnreadCount > 0)
-                    Positioned(
-                      right: 0,
-                      top: 0,
-                      child: Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          color: AppColors.secondary,
-                          shape: BoxShape.circle,
+              ],
+            ),
+            actions: [
+              IconButton(
+                icon: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Icon(Icons.notifications_outlined,
+                        color: isDark
+                            ? AppColors.textPrimaryDark
+                            : AppColors.textPrimaryLight),
+                    if (data.notificationUnreadCount > 0)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: AppColors.secondary,
+                            shape: BoxShape.circle,
+                          ),
                         ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
+                onPressed: () => Get.to(() => const NotificationsScreen()),
               ),
-              onPressed: () => Get.to(() => const NotificationsScreen()),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(right: AppConstants.spaceMD),
-              child: CircleAvatar(
-                radius: 18,
-                backgroundColor: AppColors.primary.withValues(alpha: 0.15),
-                child: ClipOval(
-                  child: NetworkImageWidget(
-                    url: data.profile.avatarUrl,
-                    width: 36,
-                    height: 36,
-                    fit: BoxFit.cover,
-                    placeholder: Text(
-                      data.profile.name.isNotEmpty
-                          ? data.profile.name[0].toUpperCase()
-                          : '?',
-                      style: AppTextStyles.labelMedium
-                          .copyWith(color: AppColors.primary),
+              Padding(
+                padding: const EdgeInsets.only(right: AppConstants.spaceMD),
+                child: CircleAvatar(
+                  radius: 18,
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.15),
+                  child: ClipOval(
+                    child: NetworkImageWidget(
+                      url: data.profile.avatarUrl,
+                      width: 36,
+                      height: 36,
+                      fit: BoxFit.cover,
+                      placeholder: Text(
+                        data.profile.name.isNotEmpty
+                            ? data.profile.name[0].toUpperCase()
+                            : '?',
+                        style: AppTextStyles.labelMedium
+                            .copyWith(color: AppColors.primary),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
 
-        SliverPadding(
-          padding: const EdgeInsets.all(AppConstants.spaceMD),
-          sliver: SliverList(
-            delegate: SliverChildListDelegate([
-              // ── Banners ────────────────────────────────────────────────
-              _BannerCarousel(ctrl: ctrl, pageCtrl: pageCtrl, data: data)
-                  .animate()
-                  .fadeIn(duration: 500.ms)
-                  .slideY(begin: 0.1, end: 0),
+          SliverPadding(
+            padding: const EdgeInsets.all(AppConstants.spaceMD),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                // ── Banners ────────────────────────────────────────────────
+                _BannerCarousel(ctrl: ctrl, pageCtrl: pageCtrl, data: data)
+                    .animate()
+                    .fadeIn(duration: 500.ms)
+                    .slideY(begin: 0.1, end: 0),
 
-              const SizedBox(height: AppConstants.spaceLG),
+                const SizedBox(height: AppConstants.spaceLG),
 
-              // ── Quick Stats ────────────────────────────────────────────
-              const SectionHeader(title: 'Quick Stats')
-                  .animate(delay: 100.ms)
-                  .fadeIn(duration: 400.ms),
-              const SizedBox(height: AppConstants.spaceMD),
-              _QuickStats(stats: data.quickStats, isDark: isDark)
-                  .animate(delay: 150.ms)
-                  .fadeIn(duration: 400.ms)
-                  .slideY(begin: 0.1, end: 0),
+                // ── Quick Stats ────────────────────────────────────────────
+                const SectionHeader(title: 'Quick Stats')
+                    .animate(delay: 100.ms)
+                    .fadeIn(duration: 400.ms),
+                const SizedBox(height: AppConstants.spaceMD),
+                _QuickStats(stats: data.quickStats, isDark: isDark)
+                    .animate(delay: 150.ms)
+                    .fadeIn(duration: 400.ms)
+                    .slideY(begin: 0.1, end: 0),
 
-              const SizedBox(height: AppConstants.spaceLG),
+                const SizedBox(height: AppConstants.spaceLG),
 
-              // ── Continue Learning ──────────────────────────────────────
-              if (data.continueLearning.isNotEmpty) ...[
+                // ── Continue Learning ──────────────────────────────────────
+                if (data.continueLearning.isNotEmpty) ...[
+                  SectionHeader(
+                    title: 'Continue Learning',
+                    actionLabel: 'See All',
+                    onAction: () {},
+                  ).animate(delay: 200.ms).fadeIn(duration: 400.ms),
+                  const SizedBox(height: AppConstants.spaceMD),
+                  ...data.continueLearning.asMap().entries.map((e) => Padding(
+                        padding:
+                            const EdgeInsets.only(bottom: AppConstants.spaceMD),
+                        child: _ContinueLearningCard(
+                                course: e.value, isDark: isDark)
+                            .animate(
+                                delay: Duration(milliseconds: 220 + e.key * 80))
+                            .fadeIn(duration: 400.ms)
+                            .slideX(begin: 0.1, end: 0),
+                      )),
+                ],
+
+                // ── Featured Courses ───────────────────────────────────────
                 SectionHeader(
-                  title: 'Continue Learning',
+                  title: 'Featured Courses',
                   actionLabel: 'See All',
                   onAction: () {},
-                ).animate(delay: 200.ms).fadeIn(duration: 400.ms),
+                ).animate(delay: 300.ms).fadeIn(duration: 400.ms),
                 const SizedBox(height: AppConstants.spaceMD),
-                ...data.continueLearning.asMap().entries.map((e) => Padding(
-                      padding: const EdgeInsets.only(
-                          bottom: AppConstants.spaceMD),
-                      child: _ContinueLearningCard(
-                              course: e.value, isDark: isDark)
-                          .animate(
-                              delay: Duration(
-                                  milliseconds: 220 + e.key * 80))
-                          .fadeIn(duration: 400.ms)
-                          .slideX(begin: 0.1, end: 0),
-                    )),
-              ],
 
-              // ── Featured Courses ───────────────────────────────────────
-              SectionHeader(
-                title: 'Featured Courses',
-                actionLabel: 'See All',
-                onAction: () {},
-              ).animate(delay: 300.ms).fadeIn(duration: 400.ms),
-              const SizedBox(height: AppConstants.spaceMD),
+                LayoutBuilder(builder: (context, constraints) {
+                  final cardW =
+                      (constraints.maxWidth * 0.44).clamp(150.0, 200.0);
+                  // 95px thumb + ~130px content = ~225px total
+                  final listH = cardW * 1.35;
+                  return SizedBox(
+                    height: listH,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: data.featuredCourses.length,
+                      separatorBuilder: (_, __) =>
+                          const SizedBox(width: AppConstants.spaceMD),
+                      itemBuilder: (context, i) {
+                        final course = data.featuredCourses[i];
+                        return SizedBox(
+                          width: cardW,
+                          child: _FeaturedCourseCard(
+                                  course: course, isDark: isDark)
+                              .animate(
+                                  delay: Duration(milliseconds: 350 + i * 80))
+                              .fadeIn(duration: 400.ms)
+                              .slideX(begin: 0.2, end: 0),
+                        );
+                      },
+                    ),
+                  );
+                }),
 
-              SizedBox(
-                height: 230,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: data.featuredCourses.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(width: AppConstants.spaceMD),
-                  itemBuilder: (context, i) {
-                    final course = data.featuredCourses[i];
-                    return SizedBox(
-                      width: 175,
-                      child: _FeaturedCourseCard(
-                              course: course, isDark: isDark)
-                          .animate(
-                              delay:
-                                  Duration(milliseconds: 350 + i * 80))
-                          .fadeIn(duration: 400.ms)
-                          .slideX(begin: 0.2, end: 0),
-                    );
-                  },
-                ),
-              ),
+                const SizedBox(height: AppConstants.spaceXL),
 
-              const SizedBox(height: AppConstants.spaceXL),
-            ]),
+                // ── App Footer ─────────────────────────────────────────────
+                _AppFooter(isDark: isDark),
+
+                const SizedBox(height: AppConstants.spaceLG),
+              ]),
+            ),
           ),
-        ),
-      ],
-    );
+        ],
+      ), // CustomScrollView
+    ); // RefreshIndicator
   }
 }
 
@@ -281,7 +295,7 @@ class _BannerCarousel extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         SizedBox(
-          height: 155,
+          height: 170,
           child: PageView.builder(
             controller: pageCtrl,
             itemCount: data.banners.length,
@@ -289,63 +303,117 @@ class _BannerCarousel extends StatelessWidget {
             itemBuilder: (context, i) {
               final banner = data.banners[i];
               final color = _colors[i % _colors.length];
-              return Container(
-                margin: const EdgeInsets.symmetric(horizontal: 2),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [color, color.withValues(alpha: 0.75)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+              return ClipRRect(
+                borderRadius: BorderRadius.circular(AppConstants.radiusXL),
+                child: Container(
+                  // margin: const EdgeInsets.symmetric(horizontal: 2),
+                  clipBehavior: Clip.hardEdge,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(AppConstants.radiusXL),
                   ),
-                  borderRadius:
-                      BorderRadius.circular(AppConstants.radiusXL),
-                ),
-                padding: const EdgeInsets.all(AppConstants.spaceMD),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(banner.title,
-                              style: AppTextStyles.h2
-                                  .copyWith(color: Colors.white)),
-                          const SizedBox(height: 4),
-                          Text(banner.subtitle,
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color:
-                                    Colors.white.withValues(alpha: 0.85),
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis),
-                          const SizedBox(height: 10),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 5),
-                            decoration: BoxDecoration(
-                              color:
-                                  Colors.white.withValues(alpha: 0.25),
-                              borderRadius: BorderRadius.circular(
-                                  AppConstants.radiusFull),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      // Background image
+                      NetworkImageWidget(
+                        url: banner.imageUrl,
+                        fit: BoxFit.cover,
+                        placeholder: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [color, color.withValues(alpha: 0.75)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
                             ),
-                            child: Text('Explore →',
-                                style: AppTextStyles.labelMedium
-                                    .copyWith(color: Colors.white)),
                           ),
-                        ],
+                        ),
                       ),
-                    ),
-                    // Banner SVG image
-                    NetworkImageWidget(
-                      url: banner.imageUrl,
-                      width: 80,
-                      height: 80,
-                      fit: BoxFit.contain,
-                      placeholder: const Icon(Icons.local_offer_rounded,
-                          color: Colors.white38, size: 56),
-                    ),
-                  ],
+
+                      // Glassmorphism layer
+                      BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            // Semi-transparent tint — image visible through it
+                            color: color.withValues(alpha: 0.25),
+                            border: Border(
+                              top: BorderSide(
+                                  color: Colors.white.withValues(alpha: 0.05),
+                                  width: 0.5),
+                              left: BorderSide(
+                                  color: Colors.white.withValues(alpha: 0.05),
+                                  width: 0.5),
+                              right: BorderSide(
+                                  color: Colors.white.withValues(alpha: 0.05),
+                                  width: 0.5),
+                              bottom: BorderSide(
+                                  color: Colors.white.withValues(alpha: 0.05),
+                                  width: 0.5),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // Content
+                      Padding(
+                        padding: const EdgeInsets.all(AppConstants.spaceMD),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(banner.title,
+                                      style: AppTextStyles.h2.copyWith(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        height: 1.25,
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis),
+                                  const SizedBox(height: 4),
+                                  Text(banner.subtitle,
+                                      style: AppTextStyles.bodySmall.copyWith(
+                                        color: Colors.white
+                                            .withValues(alpha: 0.85),
+                                        fontSize: 11,
+                                        height: 1.3,
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis),
+                                  const SizedBox(height: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 5),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(
+                                          AppConstants.radiusFull),
+                                      border: Border.all(
+                                        color:
+                                            Colors.white.withValues(alpha: 0.4),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Text('Explore →',
+                                        style:
+                                            AppTextStyles.labelMedium.copyWith(
+                                          color: Colors.white,
+                                          fontSize: 11,
+                                        )),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Icon(Icons.local_offer_rounded,
+                                color: Colors.white38, size: 56),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               );
             },
@@ -409,8 +477,7 @@ class _QuickStats extends StatelessWidget {
               padding: const EdgeInsets.all(AppConstants.spaceMD),
               decoration: BoxDecoration(
                 gradient: item.$4,
-                borderRadius:
-                    BorderRadius.circular(AppConstants.radiusLG),
+                borderRadius: BorderRadius.circular(AppConstants.radiusLG),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.1),
@@ -426,9 +493,10 @@ class _QuickStats extends StatelessWidget {
                   Icon(item.$3, color: Colors.white70, size: 20),
                   const SizedBox(height: 8),
                   Text(item.$2,
-                      style:
-                          AppTextStyles.h1.copyWith(color: Colors.white)),
+                      style: AppTextStyles.h1.copyWith(color: Colors.white)),
                   Text(item.$1,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.caption
                           .copyWith(color: Colors.white70)),
                 ],
@@ -446,15 +514,13 @@ class _ContinueLearningCard extends StatelessWidget {
   final DashboardCourse course;
   final bool isDark;
 
-  const _ContinueLearningCard(
-      {required this.course, required this.isDark});
+  const _ContinueLearningCard({required this.course, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
     final progress = (course.progressPercentage ?? 0) / 100;
     return AppCard(
-      onTap: () =>
-          Get.toNamed(AppRoutes.courseDetail, arguments: course.id),
+      onTap: () => Get.toNamed(AppRoutes.courseDetail, arguments: course.id),
       child: Row(
         children: [
           NetworkImageWidget(
@@ -487,6 +553,8 @@ class _ContinueLearningCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis),
                 const SizedBox(height: 2),
                 Text(course.teacher.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: AppTextStyles.caption.copyWith(
                       color: isDark
                           ? AppColors.textSecondaryDark
@@ -497,12 +565,10 @@ class _ContinueLearningCard extends StatelessWidget {
                   padding: EdgeInsets.zero,
                   lineHeight: 6,
                   percent: progress.clamp(0.0, 1.0),
-                  backgroundColor: isDark
-                      ? AppColors.borderDark
-                      : AppColors.borderLight,
+                  backgroundColor:
+                      isDark ? AppColors.borderDark : AppColors.borderLight,
                   progressColor: AppColors.primary,
-                  barRadius:
-                      const Radius.circular(AppConstants.radiusFull),
+                  barRadius: const Radius.circular(AppConstants.radiusFull),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -537,107 +603,256 @@ class _FeaturedCourseCard extends StatelessWidget {
   final DashboardCourse course;
   final bool isDark;
 
-  const _FeaturedCourseCard(
-      {required this.course, required this.isDark});
+  const _FeaturedCourseCard({required this.course, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
     return AppCard(
       padding: EdgeInsets.zero,
-      onTap: () =>
-          Get.toNamed(AppRoutes.courseDetail, arguments: course.id),
+      onTap: () => Get.toNamed(AppRoutes.courseDetail, arguments: course.id),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
         children: [
+          // Fixed thumbnail
           NetworkImageWidget(
             url: course.thumbnailUrl,
-            height: 110,
+            height: 115,
             width: double.infinity,
             fit: BoxFit.cover,
             borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(AppConstants.radiusLG)),
             placeholder: Container(
-              height: 110,
+              height: 95,
               color: AppColors.primary.withValues(alpha: 0.15),
               child: const Icon(Icons.play_circle_outline,
-                  color: AppColors.primary, size: 36),
+                  color: AppColors.primary, size: 32),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 8, 8, 10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 7, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius:
-                        BorderRadius.circular(AppConstants.radiusFull),
+          // Content — Expanded so price pins to bottom
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(8, 6, 8, 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Category chip
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      borderRadius:
+                          BorderRadius.circular(AppConstants.radiusFull),
+                    ),
+                    child: Text(course.category.name,
+                        style: AppTextStyles.caption.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 9,
+                          height: 1.3,
+                        )),
                   ),
-                  child: Text(course.category.name,
-                      style: AppTextStyles.caption.copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 10,
-                      )),
-                ),
-                const SizedBox(height: 5),
-                Text(course.title,
-                    style: AppTextStyles.h3.copyWith(
-                      color: isDark
-                          ? AppColors.textPrimaryDark
-                          : AppColors.textPrimaryLight,
-                      fontSize: 12,
-                      height: 1.3,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis),
-                const SizedBox(height: 3),
-                Text(course.teacher.name,
-                    style: AppTextStyles.caption.copyWith(
-                      color: isDark
-                          ? AppColors.textSecondaryDark
-                          : AppColors.textSecondaryLight,
-                      fontSize: 10,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis),
-                const SizedBox(height: 5),
-                course.isFree
-                    ? Text('Free',
-                        style: AppTextStyles.h3.copyWith(
-                          color: AppColors.success,
-                          fontSize: 13,
-                        ))
-                    : Row(
-                        children: [
-                          if (course.salePrice != null) ...[
-                            Text('₹${course.salePrice!.toStringAsFixed(0)}',
-                                style: AppTextStyles.h3.copyWith(
-                                  color: AppColors.primary,
-                                  fontSize: 13,
-                                )),
-                            const SizedBox(width: 4),
-                            Text('₹${course.price.toStringAsFixed(0)}',
-                                style: AppTextStyles.caption.copyWith(
-                                  decoration: TextDecoration.lineThrough,
-                                  color: isDark
-                                      ? AppColors.textSecondaryDark
-                                      : AppColors.textSecondaryLight,
-                                )),
-                          ] else
-                            Text('₹${course.price.toStringAsFixed(0)}',
-                                style: AppTextStyles.h3.copyWith(
-                                  color: AppColors.primary,
-                                  fontSize: 13,
-                                )),
-                        ],
+                  const SizedBox(height: 4),
+                  Text(course.title,
+                      style: AppTextStyles.h3.copyWith(
+                        color: isDark
+                            ? AppColors.textPrimaryDark
+                            : AppColors.textPrimaryLight,
+                        fontSize: 11,
+                        height: 1.25,
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis),
+                  const SizedBox(height: 2),
+                  Text(course.teacher.name,
+                      style: AppTextStyles.caption.copyWith(
+                        color: isDark
+                            ? AppColors.textSecondaryDark
+                            : AppColors.textSecondaryLight,
+                        fontSize: 9,
+                        height: 1.3,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis),
+                  const Spacer(), // price always at bottom
+                  course.isFree
+                      ? Text('Free',
+                          style: AppTextStyles.labelMedium.copyWith(
+                            color: AppColors.success,
+                            fontSize: 12,
+                          ))
+                      : Row(
+                          children: [
+                            Text(
+                                '₹${(course.salePrice ?? course.price).toStringAsFixed(0)}',
+                                style: AppTextStyles.labelMedium.copyWith(
+                                  color: AppColors.primary,
+                                  fontSize: 12,
+                                )),
+                            if (course.salePrice != null) ...[
+                              const SizedBox(width: 4),
+                              Text('₹${course.price.toStringAsFixed(0)}',
+                                  style: AppTextStyles.caption.copyWith(
+                                    decoration: TextDecoration.lineThrough,
+                                    color: isDark
+                                        ? AppColors.textSecondaryDark
+                                        : AppColors.textSecondaryLight,
+                                    fontSize: 9,
+                                  )),
+                            ],
+                          ],
+                        ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── App Footer ────────────────────────────────────────────────────────────────
+class _AppFooter extends StatelessWidget {
+  final bool isDark;
+  const _AppFooter({required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    final dividerColor =
+        isDark ? AppColors.dividerDark : AppColors.dividerLight;
+    final textSecondary =
+        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+
+    return Column(
+      children: [
+        Divider(color: dividerColor),
+        const SizedBox(height: AppConstants.spaceMD),
+
+        // Logo + App name row
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // App logo
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(AppConstants.radiusSM),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.15),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.all(4),
+              child: Image.asset(
+                'assets/images/app_logo.png',
+                fit: BoxFit.contain,
+              ),
+            ),
+            const SizedBox(width: AppConstants.spaceSM),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'SSVV OSTC',
+                  style: AppTextStyles.labelLarge.copyWith(
+                    color: isDark
+                        ? AppColors.textPrimaryDark
+                        : AppColors.textPrimaryLight,
+                    letterSpacing: 1,
+                  ),
+                ),
+                Text(
+                  'Online Sanskrit Training Centre',
+                  style: AppTextStyles.caption.copyWith(color: textSecondary),
+                ),
               ],
+            ),
+          ],
+        ),
+
+        const SizedBox(height: AppConstants.spaceMD),
+
+        // Tags / chips
+        const Wrap(
+          alignment: WrapAlignment.center,
+          spacing: AppConstants.spaceSM,
+          runSpacing: AppConstants.spaceSM,
+          children: [
+            _FooterChip(label: 'Sanskrit', icon: Icons.menu_book_rounded),
+            _FooterChip(label: 'Jyotish', icon: Icons.auto_awesome_rounded),
+            _FooterChip(label: 'Vedanta', icon: Icons.self_improvement_rounded),
+            _FooterChip(label: 'Varanasi', icon: Icons.location_on_rounded),
+            _FooterChip(label: 'UGC Approved', icon: Icons.verified_rounded),
+          ],
+        ),
+
+        const SizedBox(height: AppConstants.spaceMD),
+
+        // University name
+        Text(
+          'Sampurnanand Sanskrit Vishwavidyalaya',
+          style: AppTextStyles.bodyLarge.copyWith(
+            color: textSecondary,
+            fontWeight: FontWeight.w600,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Varanasi, Uttar Pradesh — Est. 1958',
+          style: AppTextStyles.caption.copyWith(color: textSecondary),
+          textAlign: TextAlign.center,
+        ),
+
+        const SizedBox(height: AppConstants.spaceSM),
+
+        Text(
+          '© 2025 SSVV OSTC. All rights reserved.',
+          style: AppTextStyles.caption.copyWith(
+            color: textSecondary.withValues(alpha: 0.6),
+            fontSize: 10,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+}
+
+class _FooterChip extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  const _FooterChip({required this.label, required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: isDark ? 0.15 : 0.08),
+        borderRadius: BorderRadius.circular(AppConstants.radiusFull),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.2),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: AppColors.primary),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: AppTextStyles.caption.copyWith(
+              color: AppColors.primary,
+              fontWeight: FontWeight.w600,
+              fontSize: 11,
             ),
           ),
         ],

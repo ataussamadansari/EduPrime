@@ -40,8 +40,7 @@ class ProfileScreen extends StatelessWidget {
                         .copyWith(color: AppColors.error)),
                 const SizedBox(height: AppConstants.spaceMD),
                 TextButton(
-                    onPressed: ctrl.fetchProfile,
-                    child: const Text('Retry')),
+                    onPressed: ctrl.fetchProfile, child: const Text('Retry')),
               ],
             ),
           );
@@ -154,7 +153,6 @@ class _ProfileBody extends StatelessWidget {
             ),
           ),
         ),
-
         SliverPadding(
           padding: const EdgeInsets.all(AppConstants.spaceMD),
           sliver: SliverList(
@@ -181,13 +179,11 @@ class _ProfileBody extends StatelessWidget {
 
               // Quick Access
               Text('Quick Access',
-                      style: AppTextStyles.h2.copyWith(
-                        color: isDark
-                            ? AppColors.textPrimaryDark
-                            : AppColors.textPrimaryLight,
-                      ))
-                  .animate(delay: 100.ms)
-                  .fadeIn(duration: 400.ms),
+                  style: AppTextStyles.h2.copyWith(
+                    color: isDark
+                        ? AppColors.textPrimaryDark
+                        : AppColors.textPrimaryLight,
+                  )).animate(delay: 100.ms).fadeIn(duration: 400.ms),
               const SizedBox(height: AppConstants.spaceMD),
               _MenuSection(
                 items: [
@@ -223,13 +219,11 @@ class _ProfileBody extends StatelessWidget {
 
               // Account
               Text('Account',
-                      style: AppTextStyles.h2.copyWith(
-                        color: isDark
-                            ? AppColors.textPrimaryDark
-                            : AppColors.textPrimaryLight,
-                      ))
-                  .animate(delay: 200.ms)
-                  .fadeIn(duration: 400.ms),
+                  style: AppTextStyles.h2.copyWith(
+                    color: isDark
+                        ? AppColors.textPrimaryDark
+                        : AppColors.textPrimaryLight,
+                  )).animate(delay: 200.ms).fadeIn(duration: 400.ms),
               const SizedBox(height: AppConstants.spaceMD),
               _MenuSection(
                 items: [
@@ -249,11 +243,10 @@ class _ProfileBody extends StatelessWidget {
                         isDark ? ThemeMode.light : ThemeMode.dark),
                   ),
                   _MenuItem(
-                    icon: Icons.notifications,
-                    label: 'Notifications',
-                    color: AppColors.primary,
-                    onTap: () => {}
-                  ),
+                      icon: Icons.notifications,
+                      label: 'Notifications',
+                      color: AppColors.primary,
+                      onTap: () => {}),
                   _MenuItem(
                     icon: Icons.support_agent_rounded,
                     label: 'Help & Support',
@@ -356,6 +349,8 @@ class _QuickStatsRow extends StatelessWidget {
                   Text(item.$2,
                       style: AppTextStyles.h2.copyWith(color: Colors.white)),
                   Text(item.$3,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: AppTextStyles.caption
                           .copyWith(color: Colors.white70)),
                 ],
@@ -483,7 +478,8 @@ class _MenuSection extends StatelessWidget {
                 Divider(
                   height: 1,
                   indent: AppConstants.spaceMD + 38 + AppConstants.spaceMD,
-                  color: isDark ? AppColors.dividerDark : AppColors.dividerLight,
+                  color:
+                      isDark ? AppColors.dividerDark : AppColors.dividerLight,
                 ),
             ],
           );

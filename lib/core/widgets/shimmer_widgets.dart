@@ -40,70 +40,98 @@ class DashboardShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppConstants.spaceMD),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Banner
-          const ShimmerBox(
-              width: double.infinity,
-              height: 155,
-              radius: AppConstants.radiusXL),
-          const SizedBox(height: AppConstants.spaceLG),
-          // Stats row
-          Row(
-            children: List.generate(
-                3,
-                (i) => Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.only(
-                            right: i < 2 ? AppConstants.spaceSM : 0),
-                        child: const ShimmerBox(
-                            width: double.infinity,
-                            height: 80,
-                            radius: AppConstants.radiusLG),
-                      ),
-                    )),
-          ),
-          const SizedBox(height: AppConstants.spaceLG),
-          // Section title
-          const ShimmerBox(width: 160, height: 20),
-          const SizedBox(height: AppConstants.spaceMD),
-          // Continue learning cards
-          ...List.generate(
-              2,
-              (_) => Padding(
-                    padding:
-                        const EdgeInsets.only(bottom: AppConstants.spaceMD),
-                    child: _shimmerCard(isDark, height: 90),
-                  )),
-          const SizedBox(height: AppConstants.spaceSM),
-          const ShimmerBox(width: 160, height: 20),
-          const SizedBox(height: AppConstants.spaceMD),
-          // Featured courses horizontal
-          SizedBox(
-            height: 230,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: 3,
-              separatorBuilder: (_, __) =>
-                  const SizedBox(width: AppConstants.spaceMD),
-              itemBuilder: (_, __) => const ShimmerBox(
-                  width: 175, height: 230, radius: AppConstants.radiusLG),
+    return Column(
+      children: [
+        // AppBar shimmer
+        const SafeArea(
+          bottom: false,
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: AppConstants.spaceMD,
+              vertical: AppConstants.spaceSM,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ShimmerBox(width: 100, height: 12),
+                      SizedBox(height: 6),
+                      ShimmerBox(width: 160, height: 20),
+                    ],
+                  ),
+                ),
+                ShimmerBox(
+                    width: 36, height: 36, radius: AppConstants.radiusFull),
+                SizedBox(width: AppConstants.spaceSM),
+                ShimmerBox(
+                    width: 36, height: 36, radius: AppConstants.radiusFull),
+              ],
             ),
           ),
-        ],
-      ),
+        ),
+        const Divider(height: 1),
+        // Body shimmer
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(AppConstants.spaceMD),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const ShimmerBox(
+                    width: double.infinity,
+                    height: 155,
+                    radius: AppConstants.radiusXL),
+                const SizedBox(height: AppConstants.spaceLG),
+                Row(
+                  children: List.generate(
+                      3,
+                      (i) => Expanded(
+                            child: Padding(
+                              padding: EdgeInsets.only(
+                                  right: i < 2 ? AppConstants.spaceSM : 0),
+                              child: const ShimmerBox(
+                                  width: double.infinity,
+                                  height: 80,
+                                  radius: AppConstants.radiusLG),
+                            ),
+                          )),
+                ),
+                const SizedBox(height: AppConstants.spaceLG),
+                const ShimmerBox(width: 160, height: 20),
+                const SizedBox(height: AppConstants.spaceMD),
+                ...List.generate(
+                    2,
+                    (_) => const Padding(
+                          padding:
+                              EdgeInsets.only(bottom: AppConstants.spaceMD),
+                          child: ShimmerBox(
+                              width: double.infinity,
+                              height: 90,
+                              radius: AppConstants.radiusLG),
+                        )),
+                const SizedBox(height: AppConstants.spaceSM),
+                const ShimmerBox(width: 160, height: 20),
+                const SizedBox(height: AppConstants.spaceMD),
+                SizedBox(
+                  height: 230,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: 3,
+                    separatorBuilder: (_, __) =>
+                        const SizedBox(width: AppConstants.spaceMD),
+                    itemBuilder: (_, __) => const ShimmerBox(
+                        width: 175, height: 230, radius: AppConstants.radiusLG),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
-
-  Widget _shimmerCard(bool isDark, {double height = 80}) =>
-      const ShimmerBox(
-          width: double.infinity,
-          height: 90,
-          radius: AppConstants.radiusLG);
 }
 
 // ── Course list shimmer ───────────────────────────────────────────────────────
@@ -132,12 +160,9 @@ class CourseListShimmer extends StatelessWidget {
     return ListView.separated(
       padding: const EdgeInsets.all(AppConstants.spaceMD),
       itemCount: 5,
-      separatorBuilder: (_, __) =>
-          const SizedBox(height: AppConstants.spaceMD),
+      separatorBuilder: (_, __) => const SizedBox(height: AppConstants.spaceMD),
       itemBuilder: (_, __) => const ShimmerBox(
-          width: double.infinity,
-          height: 90,
-          radius: AppConstants.radiusLG),
+          width: double.infinity, height: 90, radius: AppConstants.radiusLG),
     );
   }
 }
@@ -152,6 +177,7 @@ class ProfileShimmer extends StatelessWidget {
       padding: const EdgeInsets.all(AppConstants.spaceMD),
       child: Column(
         children: [
+          const SizedBox(height: AppConstants.spaceXXL),
           // Avatar
           const Center(
             child: ShimmerBox(
@@ -206,8 +232,7 @@ class ListShimmer extends StatelessWidget {
     return ListView.separated(
       padding: const EdgeInsets.all(AppConstants.spaceMD),
       itemCount: count,
-      separatorBuilder: (_, __) =>
-          const SizedBox(height: AppConstants.spaceMD),
+      separatorBuilder: (_, __) => const SizedBox(height: AppConstants.spaceMD),
       itemBuilder: (_, __) => ShimmerBox(
           width: double.infinity,
           height: itemHeight,
@@ -238,7 +263,9 @@ class CourseDetailShimmer extends StatelessWidget {
           const SizedBox(height: AppConstants.spaceSM),
           const ShimmerBox(width: double.infinity, height: 16),
           const SizedBox(height: AppConstants.spaceLG),
-          const ShimmerBox(width: double.infinity, height: 80,
+          const ShimmerBox(
+              width: double.infinity,
+              height: 80,
               radius: AppConstants.radiusLG),
           const SizedBox(height: AppConstants.spaceLG),
           const ShimmerBox(width: 120, height: 20),
@@ -246,8 +273,7 @@ class CourseDetailShimmer extends StatelessWidget {
           ...List.generate(
               3,
               (_) => const Padding(
-                    padding:
-                        EdgeInsets.only(bottom: AppConstants.spaceSM),
+                    padding: EdgeInsets.only(bottom: AppConstants.spaceSM),
                     child: ShimmerBox(
                         width: double.infinity,
                         height: 56,

@@ -104,12 +104,10 @@ class EditProfileController extends GetxController {
         if (gender.value.isNotEmpty) 'gender': gender.value,
       };
 
-      final avatarPath = pickedAvatarPath!.value.isNotEmpty
-          ? pickedAvatarPath!.value
-          : null;
+      final avatarPath =
+          pickedAvatarPath!.value.isNotEmpty ? pickedAvatarPath!.value : null;
 
-      final updated =
-          await _repo.updateProfile(fields, avatarPath: avatarPath);
+      final updated = await _repo.updateProfile(fields, avatarPath: avatarPath);
       Get.back(result: updated);
     } catch (e) {
       error.value = e.toString();

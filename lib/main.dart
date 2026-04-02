@@ -12,11 +12,19 @@ void main() async {
     dotenv.load(fileName: '.env'),
     GetStorage.init(),
   ]);
-  // Lock to portrait
+
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+
+  // Transparent status bar only — let Scaffold handle bottom insets
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.dark,
+    statusBarBrightness: Brightness.light,
+  ));
+
   runApp(const EduPrimeApp());
 }
 

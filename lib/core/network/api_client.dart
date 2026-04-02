@@ -11,8 +11,9 @@ class ApiClient {
   late final Dio _dio = Dio(
     BaseOptions(
       baseUrl: AppConstants.baseUrl,
-      connectTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(seconds: 15),
+      connectTimeout: AppConstants.connectTimeout,
+      receiveTimeout: AppConstants.receiveTimeout,
+      sendTimeout: AppConstants.sendTimeout,
       headers: {'Accept': 'application/json'},
     ),
   )..interceptors.addAll([
@@ -72,9 +73,8 @@ class _AuthInterceptor extends Interceptor {
       try {
         final errors = err.response?.data?['errors'];
         if (errors is Map) {
-          errorMsg = errors.values
-              .expand((v) => v is List ? v : [v])
-              .join('\n');
+          errorMsg =
+              errors.values.expand((v) => v is List ? v : [v]).join('\n');
         }
       } catch (_) {}
       handler.reject(DioException(

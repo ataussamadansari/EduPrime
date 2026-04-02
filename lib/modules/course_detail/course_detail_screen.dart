@@ -155,9 +155,7 @@ class _CourseDetailBody extends StatelessWidget {
                           label: '⏱ ${course.durationText}',
                           color: AppColors.secondary),
                       _Chip(label: course.level, color: AppColors.success),
-                      _Chip(
-                          label: course.language,
-                          color: AppColors.info),
+                      _Chip(label: course.language, color: AppColors.info),
                     ],
                   ).animate().fadeIn(duration: 400.ms),
 
@@ -165,26 +163,22 @@ class _CourseDetailBody extends StatelessWidget {
 
                   // ── Title ───────────────────────────────────────────────
                   Text(course.title,
-                          style: AppTextStyles.h1.copyWith(
-                            color: isDark
-                                ? AppColors.textPrimaryDark
-                                : AppColors.textPrimaryLight,
-                          ))
-                      .animate(delay: 50.ms)
-                      .fadeIn(duration: 400.ms),
+                      style: AppTextStyles.h1.copyWith(
+                        color: isDark
+                            ? AppColors.textPrimaryDark
+                            : AppColors.textPrimaryLight,
+                      )).animate(delay: 50.ms).fadeIn(duration: 400.ms),
 
                   const SizedBox(height: AppConstants.spaceSM),
 
                   // ── Subtitle ────────────────────────────────────────────
                   Text(course.subtitle,
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: isDark
-                                ? AppColors.textSecondaryDark
-                                : AppColors.textSecondaryLight,
-                            height: 1.5,
-                          ))
-                      .animate(delay: 80.ms)
-                      .fadeIn(duration: 400.ms),
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: isDark
+                            ? AppColors.textSecondaryDark
+                            : AppColors.textSecondaryLight,
+                        height: 1.5,
+                      )).animate(delay: 80.ms).fadeIn(duration: 400.ms),
 
                   const SizedBox(height: AppConstants.spaceMD),
 
@@ -240,8 +234,8 @@ class _CourseDetailBody extends StatelessWidget {
                     children: [
                       RatingBarIndicator(
                         rating: course.averageRating,
-                        itemBuilder: (_, __) => const Icon(Icons.star,
-                            color: Color(0xFFFFC107)),
+                        itemBuilder: (_, __) =>
+                            const Icon(Icons.star, color: Color(0xFFFFC107)),
                         itemCount: 5,
                         itemSize: 18,
                       ),
@@ -271,8 +265,7 @@ class _CourseDetailBody extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
-                            mainAxisAlignment:
-                                MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text('Your Progress',
                                   style: AppTextStyles.labelLarge.copyWith(
@@ -282,8 +275,8 @@ class _CourseDetailBody extends StatelessWidget {
                                   )),
                               Text(
                                 '${course.progressPercentage!.toStringAsFixed(0)}%',
-                                style: AppTextStyles.labelLarge.copyWith(
-                                    color: AppColors.primary),
+                                style: AppTextStyles.labelLarge
+                                    .copyWith(color: AppColors.primary),
                               ),
                             ],
                           ),
@@ -297,8 +290,8 @@ class _CourseDetailBody extends StatelessWidget {
                                 ? AppColors.borderDark
                                 : AppColors.borderLight,
                             progressColor: AppColors.primary,
-                            barRadius: const Radius.circular(
-                                AppConstants.radiusFull),
+                            barRadius:
+                                const Radius.circular(AppConstants.radiusFull),
                           ),
                         ],
                       ),
@@ -316,36 +309,31 @@ class _CourseDetailBody extends StatelessWidget {
                   if (course.description != null &&
                       course.description!.isNotEmpty) ...[
                     Text('About this Course',
-                            style: AppTextStyles.h2.copyWith(
-                              color: isDark
-                                  ? AppColors.textPrimaryDark
-                                  : AppColors.textPrimaryLight,
-                            ))
-                        .animate(delay: 200.ms)
-                        .fadeIn(duration: 400.ms),
+                        style: AppTextStyles.h2.copyWith(
+                          color: isDark
+                              ? AppColors.textPrimaryDark
+                              : AppColors.textPrimaryLight,
+                        )).animate(delay: 200.ms).fadeIn(duration: 400.ms),
                     const SizedBox(height: AppConstants.spaceSM),
                     Text(course.description!,
-                            style: AppTextStyles.bodyMedium.copyWith(
-                              color: isDark
-                                  ? AppColors.textSecondaryDark
-                                  : AppColors.textSecondaryLight,
-                              height: 1.6,
-                            ))
-                        .animate(delay: 230.ms)
-                        .fadeIn(duration: 400.ms),
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: isDark
+                              ? AppColors.textSecondaryDark
+                              : AppColors.textSecondaryLight,
+                          height: 1.6,
+                        )).animate(delay: 230.ms).fadeIn(duration: 400.ms),
                     const SizedBox(height: AppConstants.spaceLG),
                   ],
 
                   // ── Curriculum ──────────────────────────────────────────
-                  if (course.curriculum.isNotEmpty || ctrl.curriculum.isNotEmpty) ...[
+                  if (course.curriculum.isNotEmpty ||
+                      ctrl.curriculum.isNotEmpty) ...[
                     Text('Curriculum',
-                            style: AppTextStyles.h2.copyWith(
-                              color: isDark
-                                  ? AppColors.textPrimaryDark
-                                  : AppColors.textPrimaryLight,
-                            ))
-                        .animate(delay: 280.ms)
-                        .fadeIn(duration: 400.ms),
+                        style: AppTextStyles.h2.copyWith(
+                          color: isDark
+                              ? AppColors.textPrimaryDark
+                              : AppColors.textPrimaryLight,
+                        )).animate(delay: 280.ms).fadeIn(duration: 400.ms),
                     const SizedBox(height: AppConstants.spaceMD),
                     Obx(() {
                       // Prefer dedicated curriculum API, fallback to course.curriculum
@@ -358,9 +346,10 @@ class _CourseDetailBody extends StatelessWidget {
                                         .map((l) => _LessonData(
                                               id: l.id,
                                               title: l.title,
-                                              durationText: l.durationMinutes > 0
-                                                  ? '${l.durationMinutes}m'
-                                                  : null,
+                                              durationText:
+                                                  l.durationMinutes > 0
+                                                      ? '${l.durationMinutes}m'
+                                                      : null,
                                               isCompleted: l.isCompleted,
                                               isLocked: l.isLocked,
                                               isFree: l.isPreview,
@@ -398,8 +387,7 @@ class _CourseDetailBody extends StatelessWidget {
                               onToggle: () => ctrl.toggleSection(i),
                             )
                                 .animate(
-                                    delay: Duration(
-                                        milliseconds: 300 + i * 60))
+                                    delay: Duration(milliseconds: 300 + i * 60))
                                 .fadeIn(duration: 350.ms),
                           );
                         }).toList(),
@@ -439,13 +427,13 @@ class _CourseDetailBody extends StatelessWidget {
                           const SizedBox(height: AppConstants.spaceMD),
                           ...reviewList.asMap().entries.map((e) => Padding(
                                 padding: const EdgeInsets.only(
-                                    bottom: AppConstants.spaceMD),
-                                child: _ReviewCard(
-                                        review: e.value, isDark: isDark)
-                                    .animate(
-                                        delay: Duration(
-                                            milliseconds: 380 + e.key * 60))
-                                    .fadeIn(duration: 350.ms),
+                                    bottom: AppConstants.spaceXL),
+                                child:
+                                    _ReviewCard(review: e.value, isDark: isDark)
+                                        .animate(
+                                            delay: Duration(
+                                                milliseconds: 380 + e.key * 60))
+                                        .fadeIn(duration: 350.ms),
                               )),
                         ],
                       ],
@@ -463,11 +451,11 @@ class _CourseDetailBody extends StatelessWidget {
           left: 0,
           right: 0,
           child: Container(
-            padding: const EdgeInsets.fromLTRB(
+            padding: EdgeInsets.fromLTRB(
               AppConstants.spaceMD,
               AppConstants.spaceMD,
               AppConstants.spaceMD,
-              AppConstants.spaceLG,
+              AppConstants.spaceMD + MediaQuery.viewPaddingOf(context).bottom,
             ),
             decoration: BoxDecoration(
               color: isDark ? AppColors.bgDark : AppColors.bgLight,
@@ -500,13 +488,11 @@ class _CourseDetailBody extends StatelessWidget {
                               if (course.salePrice != null) ...[
                                 const SizedBox(width: 6),
                                 Padding(
-                                  padding:
-                                      const EdgeInsets.only(bottom: 2),
+                                  padding: const EdgeInsets.only(bottom: 2),
                                   child: Text(
                                     '₹${course.price.toStringAsFixed(0)}',
                                     style: AppTextStyles.bodySmall.copyWith(
-                                      decoration:
-                                          TextDecoration.lineThrough,
+                                      decoration: TextDecoration.lineThrough,
                                       color: isDark
                                           ? AppColors.textSecondaryDark
                                           : AppColors.textSecondaryLight,
@@ -531,17 +517,17 @@ class _CourseDetailBody extends StatelessWidget {
                 const SizedBox(width: AppConstants.spaceMD),
                 Expanded(
                   child: Obx(() => AppButton(
-                    label: course.isEnrolled
-                        ? 'Continue Learning'
-                        : 'Enroll Now',
-                    onTap: course.isEnrolled
-                        ? ctrl.continueLearning
-                        : ctrl.enroll,
-                    isLoading: ctrl.isEnrolling.value,
-                    icon: course.isEnrolled
-                        ? Icons.play_arrow_rounded
-                        : Icons.school_rounded,
-                  )),
+                        label: course.isEnrolled
+                            ? 'Continue Learning'
+                            : 'Enroll Now',
+                        onTap: course.isEnrolled
+                            ? ctrl.continueLearning
+                            : ctrl.enroll,
+                        isLoading: ctrl.isEnrolling.value,
+                        icon: course.isEnrolled
+                            ? Icons.play_arrow_rounded
+                            : Icons.school_rounded,
+                      )),
                 ),
               ],
             ),
@@ -563,8 +549,7 @@ void _showReviewSheet(
         left: AppConstants.spaceMD,
         right: AppConstants.spaceMD,
         top: AppConstants.spaceMD,
-        bottom: MediaQuery.of(context).viewInsets.bottom +
-            AppConstants.spaceLG,
+        bottom: MediaQuery.of(context).viewInsets.bottom + AppConstants.spaceLG,
       ),
       decoration: BoxDecoration(
         color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
@@ -581,11 +566,8 @@ void _showReviewSheet(
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: isDark
-                      ? AppColors.borderDark
-                      : AppColors.borderLight,
-                  borderRadius:
-                      BorderRadius.circular(AppConstants.radiusFull),
+                  color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                  borderRadius: BorderRadius.circular(AppConstants.radiusFull),
                 ),
               ),
             ),
@@ -605,8 +587,7 @@ void _showReviewSheet(
                   itemSize: 36,
                   itemBuilder: (_, __) =>
                       const Icon(Icons.star, color: Color(0xFFFFC107)),
-                  onRatingUpdate: (r) =>
-                      ctrl.reviewRating.value = r.toInt(),
+                  onRatingUpdate: (r) => ctrl.reviewRating.value = r.toInt(),
                 )),
             const SizedBox(height: AppConstants.spaceMD),
             TextField(
@@ -679,9 +660,7 @@ class _SectionData {
   final int lessonCount;
   final List<_LessonData> lessons;
   const _SectionData(
-      {required this.title,
-      required this.lessonCount,
-      required this.lessons});
+      {required this.title, required this.lessonCount, required this.lessons});
 }
 
 class _LessonData {
@@ -766,7 +745,8 @@ class _CurriculumSection extends StatelessWidget {
                     color: isDark
                         ? AppColors.dividerDark
                         : AppColors.dividerLight),
-                ...section.lessons.map((l) => _LessonTile(lesson: l, isDark: isDark)),
+                ...section.lessons
+                    .map((l) => _LessonTile(lesson: l, isDark: isDark)),
               ],
             ),
             crossFadeState: isExpanded
@@ -793,75 +773,75 @@ class _LessonTile extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(
             horizontal: AppConstants.spaceMD, vertical: AppConstants.spaceSM),
-      child: Row(
-        children: [
-          Container(
-            width: 28,
-            height: 28,
-            decoration: BoxDecoration(
-              color: lesson.isCompleted
-                  ? AppColors.success.withValues(alpha: 0.15)
-                  : lesson.isLocked
-                      ? AppColors.textSecondaryLight.withValues(alpha: 0.1)
-                      : AppColors.primary.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              lesson.isCompleted
-                  ? Icons.check_rounded
-                  : lesson.isLocked
-                      ? Icons.lock_outline_rounded
-                      : Icons.play_arrow_rounded,
-              size: 14,
-              color: lesson.isCompleted
-                  ? AppColors.success
-                  : lesson.isLocked
-                      ? (isDark
-                          ? AppColors.textSecondaryDark
-                          : AppColors.textSecondaryLight)
-                      : AppColors.primary,
-            ),
-          ),
-          const SizedBox(width: AppConstants.spaceSM),
-          Expanded(
-            child: Text(lesson.title,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: lesson.isLocked
-                      ? (isDark
-                          ? AppColors.textSecondaryDark
-                          : AppColors.textSecondaryLight)
-                      : (isDark
-                          ? AppColors.textPrimaryDark
-                          : AppColors.textPrimaryLight),
-                )),
-          ),
-          if (lesson.durationText != null)
-            Text(lesson.durationText!,
-                style: AppTextStyles.caption.copyWith(
-                  color: isDark
-                      ? AppColors.textSecondaryDark
-                      : AppColors.textSecondaryLight,
-                )),
-          if (lesson.isFree && !lesson.isLocked) ...[
-            const SizedBox(width: 6),
+        child: Row(
+          children: [
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              width: 28,
+              height: 28,
               decoration: BoxDecoration(
-                color: AppColors.success.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(AppConstants.radiusFull),
+                color: lesson.isCompleted
+                    ? AppColors.success.withValues(alpha: 0.15)
+                    : lesson.isLocked
+                        ? AppColors.textSecondaryLight.withValues(alpha: 0.1)
+                        : AppColors.primary.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
               ),
-              child: Text('Free',
-                  style: AppTextStyles.caption.copyWith(
-                    color: AppColors.success,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 10,
+              child: Icon(
+                lesson.isCompleted
+                    ? Icons.check_rounded
+                    : lesson.isLocked
+                        ? Icons.lock_outline_rounded
+                        : Icons.play_arrow_rounded,
+                size: 14,
+                color: lesson.isCompleted
+                    ? AppColors.success
+                    : lesson.isLocked
+                        ? (isDark
+                            ? AppColors.textSecondaryDark
+                            : AppColors.textSecondaryLight)
+                        : AppColors.primary,
+              ),
+            ),
+            const SizedBox(width: AppConstants.spaceSM),
+            Expanded(
+              child: Text(lesson.title,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: lesson.isLocked
+                        ? (isDark
+                            ? AppColors.textSecondaryDark
+                            : AppColors.textSecondaryLight)
+                        : (isDark
+                            ? AppColors.textPrimaryDark
+                            : AppColors.textPrimaryLight),
                   )),
             ),
+            if (lesson.durationText != null)
+              Text(lesson.durationText!,
+                  style: AppTextStyles.caption.copyWith(
+                    color: isDark
+                        ? AppColors.textSecondaryDark
+                        : AppColors.textSecondaryLight,
+                  )),
+            if (lesson.isFree && !lesson.isLocked) ...[
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppColors.success.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(AppConstants.radiusFull),
+                ),
+                child: Text('Free',
+                    style: AppTextStyles.caption.copyWith(
+                      color: AppColors.success,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 10,
+                    )),
+              ),
+            ],
           ],
-        ],
-      ),    // Row
-    ),      // Padding (child of InkWell)
-    );      // InkWell
+        ), // Row
+      ), // Padding (child of InkWell)
+    ); // InkWell
   }
 }
 

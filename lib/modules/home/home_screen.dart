@@ -72,6 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
         if (!didPop) await _onWillPop();
       },
       child: Scaffold(
+        // Scaffold handles bottom insets automatically
         body: GetBuilder<HomeController>(
           builder: (ctrl) => AnimatedSwitcher(
             duration: AppConstants.animNormal,
@@ -95,6 +96,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
+// ── Bottom Navigation Bar ────────────────────────────────────────────────────
 class _BottomNav extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
@@ -115,75 +117,88 @@ class _BottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
-            blurRadius: 20,
-            offset: const Offset(0, -4),
+      color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Top shadow line
+          Container(
+            height: 1,
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+                  blurRadius: 8,
+                  offset: const Offset(0, -2),
+                ),
+              ],
+              color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+            ),
+          ),
+          // Nav items — SafeArea handles system nav bar inset
+          SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppConstants.spaceSM,
+                vertical: AppConstants.spaceSM,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: List.generate(_items.length, (i) {
+                  final isActive = i == currentIndex;
+                  return GestureDetector(
+                    onTap: () => onTap(i),
+                    behavior: HitTestBehavior.opaque,
+                    child: AnimatedContainer(
+                      duration: AppConstants.animFast,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppConstants.spaceMD,
+                        vertical: AppConstants.spaceSM,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isActive
+                            ? AppColors.primary.withValues(alpha: 0.12)
+                            : Colors.transparent,
+                        borderRadius:
+                            BorderRadius.circular(AppConstants.radiusFull),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _items[i].icon,
+                            color: isActive
+                                ? AppColors.primary
+                                : (isDark
+                                    ? AppColors.textSecondaryDark
+                                    : AppColors.textSecondaryLight),
+                            size: 22,
+                          ),
+                          if (isActive) ...[
+                            const SizedBox(width: 6),
+                            Text(
+                              _items[i].label,
+                              style: AppTextStyles.labelMedium.copyWith(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            )
+                                .animate()
+                                .slideX(begin: 0.3, end: 0, duration: 200.ms)
+                                .fadeIn(duration: 200.ms),
+                          ],
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ),
           ),
         ],
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppConstants.spaceSM,
-            vertical: AppConstants.spaceSM,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: List.generate(_items.length, (i) {
-              final isActive = i == currentIndex;
-              return GestureDetector(
-                onTap: () => onTap(i),
-                behavior: HitTestBehavior.opaque,
-                child: AnimatedContainer(
-                  duration: AppConstants.animFast,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppConstants.spaceMD,
-                    vertical: AppConstants.spaceSM,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isActive
-                        ? AppColors.primary.withValues(alpha: 0.12)
-                        : Colors.transparent,
-                    borderRadius:
-                        BorderRadius.circular(AppConstants.radiusFull),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        _items[i].icon,
-                        color: isActive
-                            ? AppColors.primary
-                            : (isDark
-                                ? AppColors.textSecondaryDark
-                                : AppColors.textSecondaryLight),
-                        size: 22,
-                      ),
-                      if (isActive) ...[
-                        const SizedBox(width: 6),
-                        Text(
-                          _items[i].label,
-                          style: AppTextStyles.labelMedium.copyWith(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        )
-                            .animate()
-                            .slideX(begin: 0.3, end: 0, duration: 200.ms)
-                            .fadeIn(duration: 200.ms),
-                      ],
-                    ],
-                  ),
-                ),
-              );
-            }),
-          ),
-        ),
       ),
     );
   }

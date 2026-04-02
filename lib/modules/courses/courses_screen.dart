@@ -84,8 +84,8 @@ class _CoursesScreenState extends State<CoursesScreen> {
                     color: isDark
                         ? AppColors.textSecondaryDark
                         : AppColors.textSecondaryLight),
-                suffixIcon: const Icon(Icons.tune_rounded,
-                    color: AppColors.primary),
+                suffixIcon:
+                    const Icon(Icons.tune_rounded, color: AppColors.primary),
               ),
             ),
           ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.1, end: 0),
@@ -93,6 +93,8 @@ class _CoursesScreenState extends State<CoursesScreen> {
           // Category chips
           Obx(() {
             if (_ctrl.categories.isEmpty) return const SizedBox(height: 44);
+            // Read selectedCategory inside Obx so it reacts to changes
+            final selected = _ctrl.selectedCategory.value;
             return SizedBox(
               height: 44,
               child: ListView.separated(
@@ -106,9 +108,9 @@ class _CoursesScreenState extends State<CoursesScreen> {
                   final isAll = i == 0;
                   final CourseCategoryModel? cat =
                       isAll ? null : _ctrl.categories[i - 1];
-                  final isSelected = isAll
-                      ? _ctrl.selectedCategory.value == null
-                      : _ctrl.selectedCategory.value?.id == cat?.id;
+                  // Compute isSelected from the reactive variable
+                  final isSelected =
+                      isAll ? selected == null : selected?.id == cat?.id;
                   return FilterChip(
                     label: Text(isAll ? 'All' : cat!.name),
                     selected: isSelected,
@@ -164,8 +166,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
                           textAlign: TextAlign.center),
                       const SizedBox(height: AppConstants.spaceMD),
                       TextButton(
-                          onPressed: _ctrl.retry,
-                          child: const Text('Retry')),
+                          onPressed: _ctrl.retry, child: const Text('Retry')),
                     ],
                   ),
                 );
@@ -207,7 +208,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
       padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMD),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 0.65,
+        mainAxisExtent: 240,
         crossAxisSpacing: AppConstants.spaceMD,
         mainAxisSpacing: AppConstants.spaceMD,
       ),
@@ -233,8 +234,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
       controller: _scrollCtrl,
       padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceMD),
       itemCount: _ctrl.courses.length + (_ctrl.hasNextPage ? 1 : 0),
-      separatorBuilder: (_, __) =>
-          const SizedBox(height: AppConstants.spaceMD),
+      separatorBuilder: (_, __) => const SizedBox(height: AppConstants.spaceMD),
       itemBuilder: (context, i) {
         if (i == _ctrl.courses.length) {
           return const Center(child: CircularProgressIndicator());
@@ -279,64 +279,66 @@ class _CourseCard extends StatelessWidget {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
           children: [
+            // Thumbnail — fixed height
             NetworkImageWidget(
               url: course.thumbnailUrl,
-              height: 110,
+              height: 115,
               width: double.infinity,
               fit: BoxFit.cover,
               borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(AppConstants.radiusLG)),
               placeholder: Container(
-                height: 110,
+                height: 115,
                 color: AppColors.primary.withValues(alpha: 0.15),
                 child: const Icon(Icons.play_circle_outline,
                     color: AppColors.primary, size: 36),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(8, 8, 8, 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _CategoryChip(name: course.category.name),
-                  const SizedBox(height: 5),
-                  Text(course.title,
-                      style: AppTextStyles.h3.copyWith(
-                          color: isDark
-                              ? AppColors.textPrimaryDark
-                              : AppColors.textPrimaryLight,
-                          fontSize: 12,
-                          height: 1.3),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis),
-                  const SizedBox(height: 3),
-                  Text(course.teacher.name,
-                      style: AppTextStyles.caption.copyWith(
-                          color: isDark
-                              ? AppColors.textSecondaryDark
-                              : AppColors.textSecondaryLight,
-                          fontSize: 10),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis),
-                  const SizedBox(height: 5),
-                  Row(children: [
-                    const Icon(Icons.star,
-                        color: Color(0xFFFFC107), size: 11),
-                    const SizedBox(width: 3),
-                    Text(course.averageRating.toStringAsFixed(1),
-                        style: AppTextStyles.caption.copyWith(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 10,
+            // Content — Expanded so price pins to bottom
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _CategoryChip(name: course.category.name),
+                    const SizedBox(height: 4),
+                    Text(course.title,
+                        style: AppTextStyles.h3.copyWith(
                             color: isDark
                                 ? AppColors.textPrimaryDark
-                                : AppColors.textPrimaryLight)),
-                  ]),
-                  const SizedBox(height: 5),
-                  _PriceWidget(course: course, isDark: isDark),
-                ],
+                                : AppColors.textPrimaryLight,
+                            fontSize: 12,
+                            height: 1.3),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis),
+                    const SizedBox(height: 3),
+                    Text(course.teacher.name,
+                        style: AppTextStyles.caption.copyWith(
+                            color: isDark
+                                ? AppColors.textSecondaryDark
+                                : AppColors.textSecondaryLight,
+                            fontSize: 10),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis),
+                    const SizedBox(height: 4),
+                    Row(children: [
+                      const Icon(Icons.star,
+                          color: Color(0xFFFFC107), size: 11),
+                      const SizedBox(width: 3),
+                      Text(course.averageRating.toStringAsFixed(1),
+                          style: AppTextStyles.caption.copyWith(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 10,
+                              color: isDark
+                                  ? AppColors.textPrimaryDark
+                                  : AppColors.textPrimaryLight)),
+                    ]),
+                    const Spacer(), // pushes price to bottom
+                    _PriceWidget(course: course, isDark: isDark),
+                  ],
+                ),
               ),
             ),
           ],

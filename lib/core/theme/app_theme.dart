@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 import '../constants/app_constants.dart';
 
@@ -9,6 +10,8 @@ class AppTheme {
       useMaterial3: true,
       brightness: Brightness.light,
       scaffoldBackgroundColor: AppColors.bgLight,
+      // Apply Poppins globally
+      textTheme: GoogleFonts.poppinsTextTheme(ThemeData.light().textTheme),
       colorScheme: const ColorScheme.light(
         primary: AppColors.primary,
         secondary: AppColors.secondary,
@@ -76,6 +79,10 @@ class AppTheme {
         color: AppColors.dividerLight,
         thickness: 1,
       ),
+      // System nav bar transparent — SafeArea handles insets
+      navigationBarTheme: const NavigationBarThemeData(
+        backgroundColor: Colors.transparent,
+      ),
     );
   }
 
@@ -84,6 +91,8 @@ class AppTheme {
       useMaterial3: true,
       brightness: Brightness.dark,
       scaffoldBackgroundColor: AppColors.bgDark,
+      // Apply Poppins globally
+      textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme),
       colorScheme: const ColorScheme.dark(
         primary: AppColors.primary,
         secondary: AppColors.secondary,
@@ -150,6 +159,9 @@ class AppTheme {
       dividerTheme: const DividerThemeData(
         color: AppColors.dividerDark,
         thickness: 1,
+      ),
+      navigationBarTheme: const NavigationBarThemeData(
+        backgroundColor: Colors.transparent,
       ),
     );
   }

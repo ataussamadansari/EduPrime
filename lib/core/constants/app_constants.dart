@@ -7,6 +7,14 @@ class AppConstants {
   // API — loaded from .env file
   static String get baseUrl =>
       dotenv.env['BASE_URL'] ?? 'https://ssvv.aradhyatech.com/api/v1';
+
+  // Network timeouts — from .env, fallback to sensible defaults
+  static Duration get connectTimeout => Duration(
+      seconds: int.tryParse(dotenv.env['CONNECT_TIMEOUT'] ?? '') ?? 30);
+  static Duration get receiveTimeout => Duration(
+      seconds: int.tryParse(dotenv.env['RECEIVE_TIMEOUT'] ?? '') ?? 60);
+  static Duration get sendTimeout =>
+      Duration(seconds: int.tryParse(dotenv.env['SEND_TIMEOUT'] ?? '') ?? 30);
   static const String appTagline = 'Learn. Grow. Succeed.';
 
   // Spacing (8pt grid)

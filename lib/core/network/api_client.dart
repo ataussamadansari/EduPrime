@@ -14,7 +14,17 @@ class ApiClient {
       connectTimeout: AppConstants.connectTimeout,
       receiveTimeout: AppConstants.receiveTimeout,
       sendTimeout: AppConstants.sendTimeout,
-      headers: {'Accept': 'application/json'},
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        // Browser-like User-Agent to bypass Cloudflare/WAF bot detection
+        'User-Agent':
+            'Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 '
+                '(KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
+        'X-Requested-With': 'XMLHttpRequest',
+        'Origin': 'https://ssvv.aradhyatech.com',
+        'Referer': 'https://ssvv.aradhyatech.com/',
+      },
     ),
   )..interceptors.addAll([
       LogInterceptor(requestBody: true, responseBody: true),
@@ -58,11 +68,17 @@ class _AuthInterceptor extends Interceptor {
     }
 
     if (status == 403) {
+      // Check if it's a bot-protection HTML page (Cloudflare/WAF)
+      final responseData = err.response?.data?.toString() ?? '';
+      final isBotBlock = responseData.contains('Checking your browser') ||
+          responseData.contains('<!DOCTYPE html>');
       handler.reject(DioException(
         requestOptions: err.requestOptions,
         response: err.response,
         type: err.type,
-        error: message ?? 'Access denied.',
+        error: isBotBlock
+            ? 'Server is temporarily blocking the request. Please try again.'
+            : (message ?? 'Access denied.'),
       ));
       return;
     }

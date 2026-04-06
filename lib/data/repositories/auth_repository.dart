@@ -35,7 +35,11 @@ class AuthRepository {
     try {
       final data = await _service.verifyOtp(mobile: mobile, otp: otp);
       final d = data['data'] as Map<String, dynamic>;
-      final token = d['token'] as String;
+      final token = d['token']?.toString() ?? '';
+
+      if (token.isEmpty) {
+        throw 'Authentication failed. No token received.';
+      }
 
       // Persist token — synchronous, no await needed
       _box.write(_tokenKey, token);

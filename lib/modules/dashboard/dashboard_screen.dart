@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
+import 'package:marquee/marquee.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../../core/theme/app_colors.dart';
@@ -103,6 +104,8 @@ class _DashboardBody extends StatelessWidget {
           SliverAppBar(
             floating: true,
             backgroundColor: isDark ? AppColors.bgDark : AppColors.bgLight,
+            leading: Image.asset('assets/images/app_logo.png')
+                .paddingOnly(left: 12.0),
             title: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -114,13 +117,39 @@ class _DashboardBody extends StatelessWidget {
                         : AppColors.textSecondaryLight,
                   ),
                 ),
-                Text(
-                  data.profile.name,
-                  style: AppTextStyles.h2.copyWith(
-                    color: isDark
-                        ? AppColors.textPrimaryDark
-                        : AppColors.textPrimaryLight,
-                  ),
+                // Marquee needs bounded width — use LayoutBuilder
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final text = _subGreeting();
+                    final style = AppTextStyles.h2.copyWith(
+                      color: isDark
+                          ? AppColors.textPrimaryDark
+                          : AppColors.textPrimaryLight,
+                    );
+                    // Measure text width to decide if marquee is needed
+                    final tp = TextPainter(
+                      text: TextSpan(text: text, style: style),
+                      maxLines: 1,
+                      textDirection: TextDirection.ltr,
+                    )..layout();
+                    final needsMarquee = tp.width > (constraints.maxWidth - 8);
+                    return SizedBox(
+                      height: 26,
+                      width: constraints.maxWidth,
+                      child: needsMarquee
+                          ? Marquee(
+                              text: text,
+                              style: style,
+                              scrollAxis: Axis.horizontal,
+                              blankSpace: 48.0,
+                              velocity: 38.0,
+                              pauseAfterRound: const Duration(seconds: 2),
+                              fadingEdgeStartFraction: 0.0,
+                              fadingEdgeEndFraction: 0.08,
+                            )
+                          : Text(text, style: style),
+                    );
+                  },
                 ),
               ],
             ),
@@ -268,6 +297,15 @@ class _DashboardBody extends StatelessWidget {
       ), // CustomScrollView
     ); // RefreshIndicator
   }
+}
+
+// Time-based sub-greeting
+String _subGreeting() {
+  final hour = DateTime.now().hour;
+  if (hour < 12) return 'Ready to learn something new? 📚';
+  if (hour < 17) return 'Keep up the great work! 💪';
+  if (hour < 21) return 'Evening study session? 🌙';
+  return 'Late night learner! 🌟';
 }
 
 // ── Banner Carousel ───────────────────────────────────────────────────────────

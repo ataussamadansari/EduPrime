@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
+import '../../core/theme/app_colors.dart';
 import '../../data/models/user_model.dart';
 import '../../data/repositories/profile_repository.dart';
 
@@ -39,45 +42,153 @@ class EditProfileController extends GetxController {
     gender.value = user?.gender ?? '';
   }
 
-  Future<void> pickAvatar() async {
+  // ── Date of Birth calendar picker ─────────────────────────────────────────
+  Future<void> pickDateOfBirth(BuildContext context) async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Parse existing date if any
+    DateTime initial = DateTime.now().subtract(const Duration(days: 365 * 18));
+    if (dobCtrl.text.isNotEmpty) {
+      try {
+        initial = DateFormat('yyyy-MM-dd').parse(dobCtrl.text);
+      } catch (_) {}
+    }
+
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: DateTime(1940),
+      lastDate: DateTime.now().subtract(const Duration(days: 365 * 5)),
+      helpText: 'Select Date of Birth',
+      builder: (context, child) {
+        return Theme(
+          data: isDark ? _darkCalendarTheme() : _lightCalendarTheme(),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      // Store as yyyy-MM-dd for API, display as dd MMM yyyy
+      dobCtrl.text = DateFormat('yyyy-MM-dd').format(picked);
+    }
+  }
+
+  ThemeData _lightCalendarTheme() => ThemeData.light().copyWith(
+        colorScheme: const ColorScheme.light(
+          primary: AppColors.primary,
+          onPrimary: Colors.white,
+          surface: Colors.white,
+          onSurface: AppColors.textPrimaryLight,
+        ),
+        dialogTheme: const DialogThemeData(backgroundColor: Colors.white),
+      );
+
+  ThemeData _darkCalendarTheme() => ThemeData.dark().copyWith(
+        colorScheme: const ColorScheme.dark(
+          primary: AppColors.primary,
+          onPrimary: Colors.white,
+          surface: AppColors.cardDark,
+          onSurface: AppColors.textPrimaryDark,
+        ),
+        dialogTheme: const DialogThemeData(backgroundColor: AppColors.cardDark),
+      );
+
+  // ── Avatar picker with crop ────────────────────────────────────────────────
+  Future<void> pickAvatar(BuildContext context) async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark ? AppColors.cardDark : Colors.white;
+    final textColor =
+        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+
     final source = await Get.bottomSheet<ImageSource>(
       Container(
-        padding: const EdgeInsets.all(16),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Handle bar
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                borderRadius: BorderRadius.circular(100),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text('Choose Photo',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: textColor,
+                )),
+            const SizedBox(height: 8),
             ListTile(
-              leading: const Icon(Icons.camera_alt_rounded),
-              title: const Text('Camera'),
+              leading: const Icon(Icons.camera_alt_rounded, color: AppColors.primary),
+              title: Text('Camera', style: TextStyle(color: textColor)),
               onTap: () => Get.back(result: ImageSource.camera),
             ),
             ListTile(
-              leading: const Icon(Icons.photo_library_rounded),
-              title: const Text('Gallery'),
+              leading:
+                  const Icon(Icons.photo_library_rounded, color: AppColors.primary),
+              title: Text('Gallery', style: TextStyle(color: textColor)),
               onTap: () => Get.back(result: ImageSource.gallery),
             ),
           ],
         ),
       ),
     );
+
     if (source == null) return;
+
     try {
       final file = await _picker.pickImage(
         source: source,
-        imageQuality: 80,
-        maxWidth: 800,
+        imageQuality: 90,
+        maxWidth: 1200,
       );
-      if (file != null) pickedAvatarPath!.value = file.path;
+      if (file == null) return;
+
+      // Crop — square lock
+      final cropped = await ImageCropper().cropImage(
+        sourcePath: file.path,
+        aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Crop Photo',
+            toolbarColor: AppColors.primary,
+            toolbarWidgetColor: Colors.white,
+            statusBarLight: false,
+            // statusBarColor: AppColors.primaryDark,
+            activeControlsWidgetColor: AppColors.primary,
+            backgroundColor: Colors.black,
+            initAspectRatio: CropAspectRatioPreset.square,
+            lockAspectRatio: true,
+            showCropGrid: true,
+          ),
+          IOSUiSettings(
+            title: 'Crop Photo',
+            aspectRatioLockEnabled: true,
+            resetAspectRatioEnabled: false,
+          ),
+        ],
+      );
+
+      if (cropped != null) {
+        pickedAvatarPath!.value = cropped.path;
+      }
     } catch (e) {
-      Get.snackbar('Error', 'Could not pick image. Please restart the app.',
+      Get.snackbar('Error', 'Could not pick image.',
           snackPosition: SnackPosition.BOTTOM);
     }
   }
 
+  // ── Save ───────────────────────────────────────────────────────────────────
   Future<void> save() async {
     if (nameCtrl.text.trim().isEmpty) {
       error.value = 'Name cannot be empty';

@@ -42,7 +42,7 @@ class EditProfileScreen extends StatelessWidget {
               child: Obx(() {
                 final picked = ctrl.pickedAvatarPath!.value;
                 return GestureDetector(
-                  onTap: ctrl.pickAvatar,
+                  onTap: () => ctrl.pickAvatar(context),
                   child: Stack(
                     children: [
                       CircleAvatar(
@@ -52,9 +52,7 @@ class EditProfileScreen extends StatelessWidget {
                         child: ClipOval(
                           child: picked.isNotEmpty
                               ? Image.file(File(picked),
-                                  width: 96,
-                                  height: 96,
-                                  fit: BoxFit.cover)
+                                  width: 96, height: 96, fit: BoxFit.cover)
                               : NetworkImageWidget(
                                   url: user?.avatarUrl,
                                   width: 96,
@@ -79,7 +77,10 @@ class EditProfileScreen extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: AppColors.primary,
                             shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 2),
+                            border: Border.all(
+                              color: isDark ? AppColors.cardDark : Colors.white,
+                              width: 2,
+                            ),
                           ),
                           child: const Icon(Icons.camera_alt_rounded,
                               color: Colors.white, size: 14),
@@ -98,19 +99,60 @@ class EditProfileScreen extends StatelessWidget {
 
             _field(ctrl.nameCtrl, 'Full Name', Icons.person_outline_rounded,
                 isDark, 0),
-            _field(ctrl.headlineCtrl, 'Headline', Icons.title_rounded, isDark,
-                60),
-            _field(ctrl.bioCtrl, 'Bio', Icons.info_outline_rounded, isDark,
-                120,
+            _field(
+                ctrl.headlineCtrl, 'Headline', Icons.title_rounded, isDark, 60),
+            _field(ctrl.bioCtrl, 'Bio', Icons.info_outline_rounded, isDark, 120,
                 maxLines: 3),
-            _field(ctrl.dobCtrl, 'Date of Birth (YYYY-MM-DD)',
-                Icons.cake_rounded, isDark, 150,
-                hint: '2001-08-14'),
 
-            // Gender dropdown
+            // ── Date of Birth — calendar picker ────────────────────────────
             Padding(
-              padding:
-                  const EdgeInsets.only(bottom: AppConstants.spaceMD),
+              padding: const EdgeInsets.only(bottom: AppConstants.spaceMD),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Date of Birth',
+                      style: AppTextStyles.labelLarge.copyWith(
+                        color: isDark
+                            ? AppColors.textPrimaryDark
+                            : AppColors.textPrimaryLight,
+                      )),
+                  const SizedBox(height: AppConstants.spaceSM),
+                  GestureDetector(
+                    onTap: () => ctrl.pickDateOfBirth(context),
+                    child: AbsorbPointer(
+                      child: TextFormField(
+                        controller: ctrl.dobCtrl,
+                        readOnly: true,
+                        style: AppTextStyles.bodyLarge.copyWith(
+                          color: isDark
+                              ? AppColors.textPrimaryDark
+                              : AppColors.textPrimaryLight,
+                        ),
+                        decoration: InputDecoration(
+                          prefixIcon: const Icon(Icons.cake_rounded,
+                              color: AppColors.primary, size: 20),
+                          suffixIcon: const Icon(Icons.calendar_today_rounded,
+                              color: AppColors.primary, size: 18),
+                          hintText: 'Select date of birth',
+                          hintStyle: AppTextStyles.bodyMedium.copyWith(
+                            color: isDark
+                                ? AppColors.textSecondaryDark
+                                : AppColors.textSecondaryLight,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )
+                .animate(delay: 150.ms)
+                .fadeIn(duration: 350.ms)
+                .slideY(begin: 0.1, end: 0),
+
+            // ── Gender dropdown ────────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.only(bottom: AppConstants.spaceMD),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -142,11 +184,17 @@ class EditProfileScreen extends StatelessWidget {
                         dropdownColor: isDark
                             ? AppColors.cardDark
                             : AppColors.surfaceLight,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: isDark
+                              ? AppColors.textPrimaryDark
+                              : AppColors.textPrimaryLight,
+                        ),
                         items: ['male', 'female', 'other']
                             .map((g) => DropdownMenuItem(
-                                value: g,
-                                child: Text(
-                                    g[0].toUpperCase() + g.substring(1))))
+                                  value: g,
+                                  child:
+                                      Text(g[0].toUpperCase() + g.substring(1)),
+                                ))
                             .toList(),
                         onChanged: (v) => ctrl.gender.value = v ?? '',
                       )),
@@ -154,14 +202,14 @@ class EditProfileScreen extends StatelessWidget {
               ),
             ).animate(delay: 180.ms).fadeIn(duration: 350.ms),
 
-            _field(ctrl.addressCtrl, 'Address', Icons.home_outlined, isDark,
-                210,
+            _field(
+                ctrl.addressCtrl, 'Address', Icons.home_outlined, isDark, 210,
                 maxLines: 2),
             _field(ctrl.cityCtrl, 'City', Icons.location_city_rounded, isDark,
                 240),
             _field(ctrl.stateCtrl, 'State', Icons.map_outlined, isDark, 270),
-            _field(ctrl.countryCtrl, 'Country', Icons.flag_outlined, isDark,
-                300),
+            _field(
+                ctrl.countryCtrl, 'Country', Icons.flag_outlined, isDark, 300),
             _field(ctrl.pincodeCtrl, 'Pincode', Icons.pin_drop_rounded, isDark,
                 330,
                 keyboardType: TextInputType.number),

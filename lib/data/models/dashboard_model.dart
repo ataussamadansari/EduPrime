@@ -20,23 +20,28 @@ class DashboardModel {
   });
 
   factory DashboardModel.fromJson(Map<String, dynamic> json) {
-    final d = json['data'] as Map<String, dynamic>;
+    // Handle both {data: {...}} and flat response
+    final d = (json['data'] as Map<String, dynamic>?) ?? json;
     return DashboardModel(
-      greeting: d['greeting'] ?? '',
-      profile: UserModel.fromJson(d['profile'] as Map<String, dynamic>),
-      notificationUnreadCount: d['notification_unread_count'] ?? 0,
+      greeting: d['greeting']?.toString() ?? '',
+      profile:
+          UserModel.fromJson((d['profile'] as Map<String, dynamic>?) ?? {}),
+      notificationUnreadCount:
+          (d['notification_unread_count'] as num?)?.toInt() ?? 0,
       quickStats: QuickStats.fromJson(
-          d['quick_stats'] as Map<String, dynamic>),
-      banners: (d['banners'] as List)
-          .map((e) => BannerModel.fromJson(e))
-          .toList(),
-      continueLearning: (d['continue_learning'] as List)
-          .map((e) => DashboardCourse.fromJson(e))
-          .toList(),
-      featuredCourses: (d['featured_courses'] as List)
-          .map((e) => DashboardCourse.fromJson(e))
-          .toList(),
+          (d['quick_stats'] as Map<String, dynamic>?) ?? {}),
+      banners: _parseList(d['banners'], BannerModel.fromJson),
+      continueLearning:
+          _parseList(d['continue_learning'], DashboardCourse.fromJson),
+      featuredCourses:
+          _parseList(d['featured_courses'], DashboardCourse.fromJson),
     );
+  }
+
+  static List<T> _parseList<T>(
+      dynamic raw, T Function(Map<String, dynamic>) fromJson) {
+    if (raw == null || raw is! List) return [];
+    return raw.whereType<Map<String, dynamic>>().map(fromJson).toList();
   }
 }
 
@@ -52,10 +57,10 @@ class QuickStats {
   });
 
   factory QuickStats.fromJson(Map<String, dynamic> json) => QuickStats(
-        enrolledCourses: json['enrolled_courses'] ?? 0,
+        enrolledCourses: (json['enrolled_courses'] as num?)?.toInt() ?? 0,
         attendancePercentage:
-            (json['attendance_percentage'] ?? 0).toDouble(),
-        pendingAssignments: json['pending_assignments'] ?? 0,
+            (json['attendance_percentage'] as num?)?.toDouble() ?? 0.0,
+        pendingAssignments: (json['pending_assignments'] as num?)?.toInt() ?? 0,
       );
 }
 
@@ -77,11 +82,11 @@ class BannerModel {
   });
 
   factory BannerModel.fromJson(Map<String, dynamic> json) => BannerModel(
-        id: json['id'],
-        title: json['title'] ?? '',
-        subtitle: json['subtitle'] ?? '',
-        imageUrl: json['image_url'] ?? '',
-        actionType: json['action_type'] ?? '',
+        id: (json['id'] as num?)?.toInt() ?? 0,
+        title: json['title']?.toString() ?? '',
+        subtitle: json['subtitle']?.toString() ?? '',
+        imageUrl: json['image_url']?.toString() ?? '',
+        actionType: json['action_type']?.toString() ?? '',
         actionValue: json['action_value']?.toString() ?? '',
       );
 }
@@ -123,27 +128,27 @@ class DashboardCourse {
 
   factory DashboardCourse.fromJson(Map<String, dynamic> json) =>
       DashboardCourse(
-        id: json['id'],
-        title: json['title'] ?? '',
-        subtitle: json['subtitle'] ?? '',
-        thumbnailUrl: json['thumbnail_url'] ?? '',
-        price: (json['price'] ?? 0).toDouble(),
+        id: (json['id'] as num?)?.toInt() ?? 0,
+        title: json['title']?.toString() ?? '',
+        subtitle: json['subtitle']?.toString() ?? '',
+        thumbnailUrl: json['thumbnail_url']?.toString() ?? '',
+        price: (json['price'] as num?)?.toDouble() ?? 0.0,
         salePrice: json['sale_price'] != null
-            ? (json['sale_price']).toDouble()
+            ? (json['sale_price'] as num).toDouble()
             : null,
-        isFree: json['is_free'] ?? false,
-        level: json['level'] ?? '',
-        language: json['language'] ?? '',
-        durationText: json['duration_text'] ?? '',
+        isFree: json['is_free'] as bool? ?? false,
+        level: json['level']?.toString() ?? '',
+        language: json['language']?.toString() ?? '',
+        durationText: json['duration_text']?.toString() ?? '',
         progressPercentage: json['progress_percentage'] != null
-            ? (json['progress_percentage']).toDouble()
+            ? double.tryParse(json['progress_percentage'].toString())
             : null,
-        averageRating: (json['average_rating'] ?? 0).toDouble(),
-        reviewsCount: json['reviews_count'] ?? 0,
-        teacher:
-            CourseTeacher.fromJson(json['teacher'] as Map<String, dynamic>),
-        category:
-            CourseCategory.fromJson(json['category'] as Map<String, dynamic>),
+        averageRating: (json['average_rating'] as num?)?.toDouble() ?? 0.0,
+        reviewsCount: (json['reviews_count'] as num?)?.toInt() ?? 0,
+        teacher: CourseTeacher.fromJson(
+            (json['teacher'] as Map<String, dynamic>?) ?? {}),
+        category: CourseCategory.fromJson(
+            (json['category'] as Map<String, dynamic>?) ?? {}),
       );
 }
 
@@ -163,11 +168,11 @@ class CourseTeacher {
   });
 
   factory CourseTeacher.fromJson(Map<String, dynamic> json) => CourseTeacher(
-        id: json['id'],
-        name: json['name'] ?? '',
-        headline: json['headline'],
-        qualification: json['qualification'],
-        avatarUrl: json['avatar_url'],
+        id: (json['id'] as num?)?.toInt() ?? 0,
+        name: json['name']?.toString() ?? '',
+        headline: json['headline']?.toString(),
+        qualification: json['qualification']?.toString(),
+        avatarUrl: json['avatar_url']?.toString(),
       );
 }
 
@@ -177,6 +182,8 @@ class CourseCategory {
 
   const CourseCategory({required this.id, required this.name});
 
-  factory CourseCategory.fromJson(Map<String, dynamic> json) =>
-      CourseCategory(id: json['id'], name: json['name'] ?? '');
+  factory CourseCategory.fromJson(Map<String, dynamic> json) => CourseCategory(
+        id: (json['id'] as num?)?.toInt() ?? 0,
+        name: json['name']?.toString() ?? '',
+      );
 }

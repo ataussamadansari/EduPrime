@@ -53,7 +53,7 @@ class ProfileScreen extends StatelessWidget {
   }
 }
 
-class _ProfileBody extends StatelessWidget {
+class _ProfileBody extends StatefulWidget {
   final ProfileController ctrl;
   final UserModel user;
   final bool isDark;
@@ -65,13 +65,58 @@ class _ProfileBody extends StatelessWidget {
   });
 
   @override
+  State<_ProfileBody> createState() => _ProfileBodyState();
+}
+
+class _ProfileBodyState extends State<_ProfileBody> {
+  final _scrollCtrl = ScrollController();
+  bool _collapsed = false;
+  static const double _collapseOffset =
+      174.0; // expandedHeight - kToolbarHeight
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollCtrl.addListener(() {
+      final isNowCollapsed =
+          _scrollCtrl.hasClients && _scrollCtrl.offset >= _collapseOffset;
+      if (isNowCollapsed != _collapsed) {
+        setState(() => _collapsed = isNowCollapsed);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollCtrl.dispose();
+    super.dispose();
+  }
+
+  ProfileController get ctrl => widget.ctrl;
+  UserModel get user => widget.user;
+  bool get isDark => widget.isDark;
+
+  @override
   Widget build(BuildContext context) {
     return CustomScrollView(
+      controller: _scrollCtrl,
       slivers: [
         SliverAppBar(
           expandedHeight: 230,
           pinned: true,
           backgroundColor: isDark ? AppColors.bgDark : AppColors.bgLight,
+          title: AnimatedOpacity(
+            opacity: _collapsed ? 1.0 : 0.0,
+            duration: const Duration(milliseconds: 200),
+            child: Text(
+              user.name,
+              style: AppTextStyles.h3.copyWith(
+                color: isDark
+                    ? AppColors.textPrimaryDark
+                    : AppColors.textPrimaryLight,
+              ),
+            ),
+          ),
           flexibleSpace: FlexibleSpaceBar(
             background: Container(
               decoration: const BoxDecoration(gradient: AppColors.navyGradient),
@@ -234,13 +279,10 @@ class _ProfileBody extends StatelessWidget {
                     onTap: () => _goToEdit(ctrl, user),
                   ),
                   _MenuItem(
-                    icon: isDark
-                        ? Icons.light_mode_rounded
-                        : Icons.dark_mode_rounded,
-                    label: isDark ? 'Light Mode' : 'Dark Mode',
+                    icon: Icons.brightness_auto_rounded,
+                    label: 'Appearance',
                     color: AppColors.warning,
-                    onTap: () => Get.changeThemeMode(
-                        isDark ? ThemeMode.light : ThemeMode.dark),
+                    onTap: () => _showThemeSheet(context, isDark),
                   ),
                   _MenuItem(
                       icon: Icons.notifications,
@@ -288,6 +330,76 @@ class _ProfileBody extends StatelessWidget {
     if (updated is UserModel) {
       ctrl.user.value = updated;
     }
+  }
+
+  void _showThemeSheet(BuildContext context, bool isDark) {
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.cardDark : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                borderRadius: BorderRadius.circular(100),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Appearance',
+              style: AppTextStyles.h2.copyWith(
+                color: isDark
+                    ? AppColors.textPrimaryDark
+                    : AppColors.textPrimaryLight,
+              ),
+            ),
+            const SizedBox(height: 8),
+            _ThemeOption(
+              icon: Icons.light_mode_rounded,
+              label: 'Light',
+              subtitle: 'Always use light theme',
+              isSelected:
+                  !Get.isDarkMode && Get.theme.brightness == Brightness.light,
+              isDark: isDark,
+              onTap: () {
+                Get.changeThemeMode(ThemeMode.light);
+                Get.back();
+              },
+            ),
+            _ThemeOption(
+              icon: Icons.dark_mode_rounded,
+              label: 'Dark',
+              subtitle: 'Always use dark theme',
+              isSelected: Get.isDarkMode,
+              isDark: isDark,
+              onTap: () {
+                Get.changeThemeMode(ThemeMode.dark);
+                Get.back();
+              },
+            ),
+            _ThemeOption(
+              icon: Icons.brightness_auto_rounded,
+              label: 'System',
+              subtitle: 'Follow device setting',
+              isSelected: false, // can't detect system easily
+              isDark: isDark,
+              onTap: () {
+                Get.changeThemeMode(ThemeMode.system);
+                Get.back();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -500,4 +612,91 @@ class _MenuItem {
     required this.color,
     required this.onTap,
   });
+}
+
+// ── Theme option tile ─────────────────────────────────────────────────────────
+class _ThemeOption extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String subtitle;
+  final bool isSelected;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  const _ThemeOption({
+    required this.icon,
+    required this.label,
+    required this.subtitle,
+    required this.isSelected,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppConstants.radiusMD),
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 4),
+        padding: const EdgeInsets.symmetric(
+            horizontal: AppConstants.spaceMD, vertical: AppConstants.spaceSM),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.primary.withValues(alpha: 0.1)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(AppConstants.radiusMD),
+          border: isSelected
+              ? Border.all(color: AppColors.primary, width: 1.5)
+              : null,
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? AppColors.primary.withValues(alpha: 0.15)
+                    : (isDark ? AppColors.borderDark : AppColors.borderLight),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon,
+                  color: isSelected
+                      ? AppColors.primary
+                      : (isDark
+                          ? AppColors.textSecondaryDark
+                          : AppColors.textSecondaryLight),
+                  size: 20),
+            ),
+            const SizedBox(width: AppConstants.spaceMD),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label,
+                      style: AppTextStyles.labelLarge.copyWith(
+                        color: isSelected
+                            ? AppColors.primary
+                            : (isDark
+                                ? AppColors.textPrimaryDark
+                                : AppColors.textPrimaryLight),
+                      )),
+                  Text(subtitle,
+                      style: AppTextStyles.caption.copyWith(
+                        color: isDark
+                            ? AppColors.textSecondaryDark
+                            : AppColors.textSecondaryLight,
+                      )),
+                ],
+              ),
+            ),
+            if (isSelected)
+              const Icon(Icons.check_circle_rounded,
+                  color: AppColors.primary, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
 }

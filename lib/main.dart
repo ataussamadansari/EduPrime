@@ -18,11 +18,15 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  // Transparent status bar only — let Scaffold handle bottom insets
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.dark,
     statusBarBrightness: Brightness.light,
+    systemNavigationBarColor: Colors.transparent,
+    systemNavigationBarDividerColor: Colors.transparent,
+    systemNavigationBarIconBrightness: Brightness.dark,
   ));
 
   runApp(const EduPrimeApp());
@@ -43,6 +47,18 @@ class EduPrimeApp extends StatelessWidget {
       getPages: AppRoutes.pages,
       defaultTransition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 300),
+      // builder: (context, child) {
+      //   final isDark = Theme.of(context).brightness == Brightness.dark;
+      //   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      //     statusBarColor: Colors.transparent,
+      //     statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+      //     statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+      //     systemNavigationBarColor: Colors.transparent,
+      //     systemNavigationBarIconBrightness:
+      //         isDark ? Brightness.light : Brightness.dark,
+      //   ));
+      //   return child!;
+      // },
     );
   }
 }

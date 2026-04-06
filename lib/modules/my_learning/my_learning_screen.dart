@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
+import '../home/home_controller.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
@@ -45,8 +46,7 @@ class MyLearningScreen extends StatelessWidget {
                     textAlign: TextAlign.center),
                 const SizedBox(height: AppConstants.spaceMD),
                 TextButton(
-                    onPressed: ctrl.fetchMyCourses,
-                    child: const Text('Retry')),
+                    onPressed: ctrl.fetchMyCourses, child: const Text('Retry')),
               ],
             ),
           );
@@ -109,8 +109,8 @@ class _EnrolledCourseCard extends StatelessWidget {
                 top: AppConstants.spaceSM,
                 right: AppConstants.spaceSM,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.65),
                     borderRadius:
@@ -155,8 +155,7 @@ class _EnrolledCourseCard extends StatelessWidget {
                   backgroundColor:
                       isDark ? AppColors.borderDark : AppColors.borderLight,
                   linearGradient: AppColors.primaryGradient,
-                  barRadius:
-                      const Radius.circular(AppConstants.radiusFull),
+                  barRadius: const Radius.circular(AppConstants.radiusFull),
                 ),
                 const SizedBox(height: 6),
                 Row(
@@ -180,8 +179,8 @@ class _EnrolledCourseCard extends StatelessWidget {
                   label: (course.progressPercentage ?? 0) > 0
                       ? 'Continue'
                       : 'Start Learning',
-                  onTap: () => Get.toNamed(AppRoutes.courseDetail,
-                      arguments: course.id),
+                  onTap: () =>
+                      Get.toNamed(AppRoutes.courseDetail, arguments: course.id),
                   icon: Icons.play_arrow_rounded,
                 ),
               ],
@@ -228,10 +227,13 @@ class _EmptyState extends StatelessWidget {
                     : AppColors.textSecondaryLight,
               )),
           const SizedBox(height: AppConstants.spaceLG),
-          AppButton(label: 'Browse Courses', onTap: () {}, width: 200),
+          AppButton(
+            label: 'Browse Courses',
+            onTap: () => Get.find<HomeController>().changePage(1),
+            width: 200,
+          ),
         ],
       ),
     );
   }
 }
-
